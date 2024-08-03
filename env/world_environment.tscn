@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://dbo14q6c2p0cr"]
+
+[ext_resource type="Texture2D" uid="uid://dofawa45xtkmm" path="res://env/hdr/kloppenheim_06_puresky_2k.hdr" id="1_vkpuw"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_rjbvo"]
+panorama = ExtResource("1_vkpuw")
+
+[sub_resource type="Sky" id="Sky_pq2br"]
+sky_material = SubResource("PanoramaSkyMaterial_rjbvo")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_v1cve"]
+background_mode = 2
+background_color = Color(0.711065, 0.801215, 0.920015, 1)
+sky = SubResource("Sky_pq2br")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 0.92
+tonemap_white = 2.27
+ssao_enabled = true
+ssao_detail = 0.6
+
+[node name="WorldEnvironment" type="WorldEnvironment"]
+environment = SubResource("Environment_v1cve")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.793642, 0.454358, -0.404588, -0.352596, 0.885456, 0.302727, 0.495791, -0.0976008, 0.86294, 0, 0, 0)
+shadow_enabled = true
+shadow_bias = 0.0
