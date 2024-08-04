@@ -11,7 +11,7 @@
 albedo_texture = ExtResource("2_rg7w8")
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8jto"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smjr7"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_y73l5")
 metallic = 0.14
@@ -21,7 +21,7 @@ uv1_triplanar = true
 
 [sub_resource type="SystemFont" id="SystemFont_vgfho"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vww6v"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d1i32"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_y73l5")
 metallic = 0.14
@@ -29,7 +29,7 @@ normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ei83d"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fqgmq"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("5_5uoxn")
 metallic = 0.64
@@ -42,13 +42,13 @@ subsurf_scatter_transmittance_boost = 0.14
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7xev4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q4pho"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("5_5uoxn")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_krev7"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m0mgf"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_y73l5")
 metallic = 0.14
@@ -61,33 +61,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.476631, -0.485744, -1.1081
 
 [node name="Character" parent="." instance=ExtResource("1_xc835")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.26315, -0.331395, 12.3676)
-base_speed = 6.0
-sprint_speed_multiplier = 1.75
-crouch_speed = 4.0
-acceleration = 10.0
-mouse_sensitivity = 0.1
-immobile = false
-JUMP = "vk_jump"
-LEFT = "vk_left"
-RIGHT = "vk_right"
-FORWARD = "vk_forward"
-BACKWARD = "vk_backward"
-PAUSE = "vk_pause"
-CROUCH = "vk_crouch"
-SPRINT = "vk_sprint"
-jumping_enabled = true
-in_air_momentum = true
-motion_smoothing = true
-sprint_enabled = true
-crouch_enabled = true
-crouch_mode = 0
-sprint_mode = 0
-dynamic_fov = true
-continuous_jumping = true
-view_bobbing = true
-jump_animation = true
-pausing_enabled = true
-gravity_enabled = true
 
 [node name="Floor" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.644006, -1, -3.66403)
@@ -99,7 +72,7 @@ size = Vector3(40, 1, 40)
 [node name="CrouchBox" parent="." instance=ExtResource("3_vlbhk")]
 transform = Transform3D(1, 0, 0, 0, 0.999988, -0.00499162, 0, 0.00499162, 0.999988, -10.6811, 1.68031, 10.866)
 size = Vector3(1.42188, 1, 5)
-material = SubResource("StandardMaterial3D_x8jto")
+material = SubResource("StandardMaterial3D_smjr7")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox"]
@@ -113,25 +86,25 @@ uppercase = true
 [node name="HopBox" parent="." instance=ExtResource("3_vlbhk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.94601, 0.0139091, 1.93297)
 size = Vector3(5, 1, 5)
-material = SubResource("StandardMaterial3D_vww6v")
+material = SubResource("StandardMaterial3D_d1i32")
 block_color = 3
 
 [node name="ReflectanceMetallicBox" parent="." instance=ExtResource("3_vlbhk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.64308, 0.5, 2.81997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_ei83d")
+material = SubResource("StandardMaterial3D_fqgmq")
 
 [node name="BigBox" parent="." instance=ExtResource("3_vlbhk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.07083, 0.5, 2.03997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_7xev4")
+material = SubResource("StandardMaterial3D_q4pho")
 
 [node name="WorldEnvironment" parent="." instance=ExtResource("6_2s1yp")]
 
 [node name="CrouchBox2" parent="." instance=ExtResource("3_vlbhk")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.87094, 1.85492, 10.739)
 size = Vector3(1, 1, 5)
-material = SubResource("StandardMaterial3D_krev7")
+material = SubResource("StandardMaterial3D_m0mgf")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox2"]
