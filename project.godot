@@ -27,6 +27,14 @@ window/size/extend_to_title=true
 window/stretch/scale_mode="integer"
 window/vsync/vsync_mode=2
 
+[dotnet]
+
+project/assembly_name="First Try FPS"
+
+[editor_plugins]
+
+enabled=PackedStringArray()
+
 [input]
 
 ui_right={
