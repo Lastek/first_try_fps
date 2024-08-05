@@ -33,7 +33,7 @@ project/assembly_name="First Try FPS"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 
 [input]
 
