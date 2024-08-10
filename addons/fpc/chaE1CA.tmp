@@ -1,10 +1,21 @@
-[gd_scene load_steps=20 format=3 uid="uid://cc1m2a1obsyn4"]
+[gd_scene load_steps=21 format=3 uid="uid://cc1m2a1obsyn4"]
 
 [ext_resource type="Script" path="res://scripts/char.gd" id="1_627hw"]
-[ext_resource type="CapsuleMesh" uid="uid://cqnpb8mm0s3dx" path="res://meshes/player_capsule_mesh.tres" id="2_51nh8"]
-[ext_resource type="Shape3D" uid="uid://gbrwu1cyrge0" path="res://meshes/player_capsule_mesh_collision.tres" id="3_efww3"]
 [ext_resource type="Script" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
 [ext_resource type="Script" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kp17n"]
+albedo_color = Color(0.909804, 0.596078, 0, 1)
+clearcoat_enabled = true
+clearcoat_roughness = 0.2
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_jw1de"]
+material = SubResource("StandardMaterial3D_kp17n")
+height = 1.84
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uy03j"]
+margin = 0.1
+height = 1.8
 
 [sub_resource type="Animation" id="Animation_j8cx7"]
 resource_name = "RESET"
@@ -349,11 +360,11 @@ script = ExtResource("1_627hw")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-mesh = ExtResource("2_51nh8")
+mesh = SubResource("CapsuleMesh_jw1de")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = ExtResource("3_efww3")
+shape = SubResource("CapsuleShape3D_uy03j")
 
 [node name="CrouchAnimation" type="AnimationPlayer" parent="."]
 libraries = {
@@ -364,14 +375,10 @@ libraries = {
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
 [node name="Camera" type="Camera3D" parent="Head"]
-current = true
 fov = 85.0
 
 [node name="ReflectionProbe" type="ReflectionProbe" parent="Head/Camera"]
 update_mode = 1
-max_distance = 15.4
-size = Vector3(40, 40, 40)
-box_projection = true
 
 [node name="HeadbobAnimation" type="AnimationPlayer" parent="Head"]
 libraries = {

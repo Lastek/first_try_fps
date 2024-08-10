@@ -1,0 +1,14 @@
+[gd_resource type="CapsuleMesh" load_steps=3 format=3 uid="uid://cqnpb8mm0s3dx"]
+
+[ext_resource type="Texture2D" uid="uid://buxubvcl0xme5" path="res://addons/proto-csgs/textures/dark/texture_07.png" id="1_n838y"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ymacb"]
+albedo_texture = ExtResource("1_n838y")
+uv1_triplanar = true
+uv2_triplanar = true
+
+[resource]
+lightmap_size_hint = Vector2i(17, 14)
+material = SubResource("StandardMaterial3D_ymacb")
+radius = 0.45
+height = 1.8

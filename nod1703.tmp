@@ -1,0 +1,115 @@
+[gd_scene load_steps=14 format=3 uid="uid://dktlakt1nm6u1"]
+
+[ext_resource type="PackedScene" uid="uid://cc1m2a1obsyn4" path="res://addons/fpc/character.tscn" id="1_xc835"]
+[ext_resource type="Texture2D" uid="uid://dl567gulrbij6" path="res://addons/proto-csgs/textures/light/texture_09.png" id="2_rg7w8"]
+[ext_resource type="PackedScene" uid="uid://dxw7cledbpiia" path="res://addons/proto-csgs/proto_csg_box_3d.tscn" id="3_vlbhk"]
+[ext_resource type="Texture2D" uid="uid://c0x0tvmbhaqck" path="res://addons/proto-csgs/textures/orange/texture_13.png" id="4_y73l5"]
+[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="5_5uoxn"]
+[ext_resource type="PackedScene" uid="uid://dbo14q6c2p0cr" path="res://env/world_environment.tscn" id="6_2s1yp"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dwqnk"]
+albedo_texture = ExtResource("2_rg7w8")
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xmhj"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("4_y73l5")
+metallic = 0.14
+normal_enabled = true
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="SystemFont" id="SystemFont_vgfho"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pncq6"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("4_y73l5")
+metallic = 0.14
+normal_enabled = true
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ft4hj"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("5_5uoxn")
+metallic = 0.64
+roughness = 0.47
+subsurf_scatter_strength = 0.5
+subsurf_scatter_skin_mode = true
+subsurf_scatter_transmittance_enabled = true
+subsurf_scatter_transmittance_depth = 0.544
+subsurf_scatter_transmittance_boost = 0.14
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kpi77"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("5_5uoxn")
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3mh4a"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("4_y73l5")
+metallic = 0.14
+normal_enabled = true
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[node name="Node3D" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.476631, -0.485744, -1.10813)
+
+[node name="Floor" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.644006, -1, -3.66403)
+material_override = SubResource("StandardMaterial3D_dwqnk")
+snap = 0.5
+use_collision = true
+size = Vector3(40, 1, 40)
+
+[node name="CrouchBox" parent="." instance=ExtResource("3_vlbhk")]
+transform = Transform3D(1, 0, 0, 0, 0.999988, -0.00499162, 0, 0.00499162, 0.999988, -10.6811, 1.68031, 10.866)
+size = Vector3(1.42188, 1, 5)
+material = SubResource("StandardMaterial3D_0xmhj")
+block_color = 3
+
+[node name="Crouch_Label" type="Label3D" parent="CrouchBox"]
+transform = Transform3D(0.12954, 0.0184993, 0.991402, 4.65661e-10, 0.999826, -0.0186565, -0.991574, 0.00241676, 0.129517, -2.13583, 2.04495, 0.210402)
+text = "No uncrouching
+"
+font = SubResource("SystemFont_vgfho")
+font_size = 128
+uppercase = true
+
+[node name="HopBox" parent="." instance=ExtResource("3_vlbhk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.94601, 0.0139091, 1.93297)
+size = Vector3(5, 1, 5)
+material = SubResource("StandardMaterial3D_pncq6")
+block_color = 3
+
+[node name="ReflectanceMetallicBox" parent="." instance=ExtResource("3_vlbhk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.64308, 0.5, 2.81997)
+size = Vector3(3, 2, 3)
+material = SubResource("StandardMaterial3D_ft4hj")
+
+[node name="BigBox" parent="." instance=ExtResource("3_vlbhk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.07083, 0.5, 2.03997)
+size = Vector3(3, 2, 3)
+material = SubResource("StandardMaterial3D_kpi77")
+
+[node name="WorldEnvironment" parent="." instance=ExtResource("6_2s1yp")]
+
+[node name="CrouchBox2" parent="." instance=ExtResource("3_vlbhk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.87094, 1.85492, 10.712)
+size = Vector3(1, 1, 5)
+material = SubResource("StandardMaterial3D_3mh4a")
+block_color = 3
+
+[node name="Crouch_Label" type="Label3D" parent="CrouchBox2"]
+transform = Transform3D(0.12954, 0.0184993, 0.991402, 4.65661e-10, 0.999826, -0.0186565, -0.991574, 0.00241676, 0.129517, -0.0718236, 2.04495, 0.210402)
+text = "CROUCH_OK"
+font = SubResource("SystemFont_vgfho")
+font_size = 128
+uppercase = true
+
+[node name="Character" parent="." instance=ExtResource("1_xc835")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10.4667)

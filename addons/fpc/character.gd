@@ -1,8 +1,9 @@
 # COPYRIGHT Colormatic Studios
 # MIT licence
 # Quality Godot First Person Controller v2
-extends CharacterBody3D
 
+# Modified by Lastek
+extends CharacterBody3D
 # TODO: Add descriptions for each value
 @export_category("Character")
 @export var base_speed : float = 6.0
@@ -18,7 +19,7 @@ extends CharacterBody3D
 @export_file var default_reticle
 
 @export_group("Nodes")
-@export var HEAD : Node3D
+@export var HEAD : Node3D 
 @export var CAMERA : Camera3D
 @export var HEADBOB_ANIMATION : AnimationPlayer
 @export var JUMP_ANIMATION : AnimationPlayer
@@ -147,7 +148,7 @@ func _physics_process(delta):
 		snappedf(cv.y, 0.001),
 		snappedf(cv.z, 0.001)
 	]
-	#TODO: MOve these out of the physics processing
+	#TODO: Move these out of the physics processing and into the idle func
 	var readable_velocity : String = "X: " + str(vd[0]) + " Y: " + str(vd[1]) + " Z: " + str(vd[2])
 	$UserInterface/DebugPanel.add_property("Velocity", readable_velocity, 3)
 	
@@ -287,9 +288,6 @@ func enter_normal_state():
 	state = STATE.NORMAL
 	speed = base_speed
 
-func enter_crouch_state():
-	#print("entering crouch state")
-	var prev_state = state
 	state = STATE.CROUCH
 	speed = crouch_speed
 	CROUCH_ANIMATION.play("crouch")
@@ -394,8 +392,7 @@ func _on_crouch_animation_animation_started(anim_name):
 		is_crouched = !is_crouched
 		
 
-func check_controls(): # If you add a control, you might want to add a check for it here.
-	# The actions are being disabled so the engine doesn't halt the entire project in debug mode
+func check_controls(): 
 	for i in ACTIONS:
 		var k = ACTIONS.find_key(i)
 		if !InputMap.has_action(i):

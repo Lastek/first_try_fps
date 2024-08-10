@@ -1,18 +1,39 @@
 extends PanelContainer
 
+@onready var property_container = $MarginContainer/VBoxContainer
+
+#var property
+var frames_per_second: String
+
+func _ready():
+	Global.debug = self
+	visible = true
 
 func _process(delta):
-	if visible:
-		pass
+	pass
+	#if visible:
+		#pass
+		#property.text = property.name+ ": " + frames_per_second
 
-func add_property(title : String, value, order : int): # This can either be called once for a static property or called every frame for a dynamic property
+func _input(event):
+	if event.is_action_pressed("vk_debug"):
+		visible = !visible
+
+
+func add_property(title :String, value, order):
+	# @order 0 - n or -1 for append
+	if order < 0: order = 999
 	var target
-	target = $MarginContainer/VBoxContainer.find_child(title, true, false) # I have no idea what true and false does here, the function should be more specific
+	target = property_container.find_child(title, true, false)
 	if !target:
-		target = Label.new() # Debug lines are of type Label
-		$MarginContainer/VBoxContainer.add_child(target)
+		target = Label.new()
+		property_container.add_child(target)
 		target.name = title
-		target.text = title + ": " + str(value)
+		target.text = target.name + ": " + str(value)
 	elif visible:
 		target.text = title + ": " + str(value)
-		$MarginContainer/VBoxContainer.move_child(target, order)
+		#property_container.move_child(target, order)
+	#property = Label.new()
+	#property_container.add_child(property)
+	#property.name = title
+	#property.text = property.name + value		
