@@ -52,6 +52,7 @@ var DEBUG_STATE: Dictionary = {
 var speed = SPEED_BASE
 var state: STATE = STATE.NORMAL
 var state_prev: STATE = STATE.NORMAL
+
 var input_dir: Vector2
 var input_dir_prev: Vector2
 var crouched: bool = false
@@ -172,17 +173,6 @@ func _state(input_dir):
 		velocity.y += JUMP_VELOCITY  * JUMP_MUL
 		state_prev = state
 		state = STATE.JUMPING
-	elif touching_floor and state == STATE.JUMPING:
-		# Swap the two variables
-		@warning_ignore("int_as_enum_without_cast")
-		state_prev ^= state
-		@warning_ignore("int_as_enum_without_cast")
-		state ^= state_prev
-		state_prev ^=state
-	elif touching_floor and Input.is_action_pressed(ACTIONS[SPRINT]):
-		state_prev = state
-		speed = SPEED_BASE * SPRINT_SPEED_MUL
-		state = STATE.SPRINTING
 	elif touching_floor and state == STATE.SPRINTING:
 		state_prev = state
 		speed = SPEED_BASE
@@ -191,7 +181,20 @@ func _state(input_dir):
 		handle_crouch(touching_floor,true)
 	elif Input.is_action_just_released(ACTIONS[CROUCH]):
 		handle_crouch(touching_floor,false)
-	
+	# FIXME: Proper state handling
+	elif touching_floor and state == STATE.JUMPING:
+		# Swap the two variables
+		@warning_ignore("int_as_enum_without_cast")
+		state_prev ^= state
+		@warning_ignore("int_as_enum_without_cast")
+		state ^= state_prev
+		state_prev ^=state
+	# FIXME: Proper stae handling
+	# this will repeatedly trigger
+	elif touching_floor and Input.is_action_pressed(ACTIONS[SPRINT]):
+		state_prev = state
+		speed = SPEED_BASE * SPRINT_SPEED_MUL
+		state = STATE.SPRINTING
 	set_speed()
 
 func handle_crouch(touching_floor: int, pressed: bool):
