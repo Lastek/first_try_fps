@@ -1,20 +1,20 @@
 [gd_scene load_steps=20 format=3 uid="uid://dktlakt1nm6u1"]
 
-[ext_resource type="Script" path="res://node_3d.gd" id="1_ji26q"]
-[ext_resource type="PackedScene" uid="uid://cc1m2a1obsyn4" path="res://addons/fpc/character.tscn" id="1_xc835"]
-[ext_resource type="Texture2D" uid="uid://dl567gulrbij6" path="res://addons/proto-csgs/textures/light/texture_09.png" id="2_rg7w8"]
-[ext_resource type="PackedScene" uid="uid://dxw7cledbpiia" path="res://addons/proto-csgs/proto_csg_box_3d.tscn" id="3_vlbhk"]
-[ext_resource type="Texture2D" uid="uid://c0x0tvmbhaqck" path="res://addons/proto-csgs/textures/orange/texture_13.png" id="4_y73l5"]
-[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="5_5uoxn"]
-[ext_resource type="PackedScene" uid="uid://dbo14q6c2p0cr" path="res://env/world_environment.tscn" id="6_2s1yp"]
+[ext_resource type="Script" path="res://scenes/MainTestScene.gd" id="1_xqpsn"]
+[ext_resource type="Texture2D" uid="uid://dl567gulrbij6" path="res://addons/proto-csgs/textures/light/texture_09.png" id="2_48v0d"]
+[ext_resource type="PackedScene" uid="uid://dxw7cledbpiia" path="res://addons/proto-csgs/proto_csg_box_3d.tscn" id="3_hrauq"]
+[ext_resource type="Texture2D" uid="uid://c0x0tvmbhaqck" path="res://addons/proto-csgs/textures/orange/texture_13.png" id="4_83bls"]
+[ext_resource type="Texture2D" uid="uid://cej3yoosomfd2" path="res://addons/proto-csgs/textures/dark/texture_13.png" id="5_yjg44"]
+[ext_resource type="PackedScene" uid="uid://dbo14q6c2p0cr" path="res://env/world_environment.tscn" id="6_ivmnp"]
+[ext_resource type="PackedScene" uid="uid://cc1m2a1obsyn4" path="res://addons/fpc/character.tscn" id="7_46v10"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dwqnk"]
-albedo_texture = ExtResource("2_rg7w8")
+albedo_texture = ExtResource("2_48v0d")
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rr2kk"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_776qr"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
 normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
@@ -22,17 +22,17 @@ uv1_triplanar = true
 
 [sub_resource type="SystemFont" id="SystemFont_vgfho"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_b62ya"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_loeny"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
 normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lk00f"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ksd5q"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("5_5uoxn")
+albedo_texture = ExtResource("5_yjg44")
 metallic = 0.64
 roughness = 0.47
 subsurf_scatter_strength = 0.5
@@ -43,53 +43,53 @@ subsurf_scatter_transmittance_boost = 0.14
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jaxrc"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_537uu"]
 render_priority = 1
 albedo_color = Color(0.823212, 0.823212, 0.823212, 1)
-albedo_texture = ExtResource("5_5uoxn")
+albedo_texture = ExtResource("5_yjg44")
 roughness = 0.11
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ff47q"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2no8"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("5_5uoxn")
+albedo_texture = ExtResource("5_yjg44")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sf41g"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h38uv"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
 normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ownmk"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5ql5p"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_05iop"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mhlxc"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hd3re"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mqfjo"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q5cqy"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_irq6y"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_y73l5")
+albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[node name="Node3D" type="Node3D"]
+[node name="MainTestScene" type="Node3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.476631, -0.485744, -1.10813)
-script = ExtResource("1_ji26q")
+script = ExtResource("1_xqpsn")
 
 [node name="Floor" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 11)
@@ -98,10 +98,10 @@ snap = 0.5
 use_collision = true
 size = Vector3(60, 1, 60)
 
-[node name="CrouchBox" parent="." instance=ExtResource("3_vlbhk")]
+[node name="CrouchBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 0.999988, -0.00499162, 0, 0.00499162, 0.999988, -10.6811, 2.68031, 10.866)
 size = Vector3(1.42188, 1, 5)
-material = SubResource("StandardMaterial3D_rr2kk")
+material = SubResource("StandardMaterial3D_776qr")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox"]
@@ -112,21 +112,21 @@ font = SubResource("SystemFont_vgfho")
 font_size = 128
 uppercase = true
 
-[node name="HopBox" parent="." instance=ExtResource("3_vlbhk")]
+[node name="HopBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.94601, 1.01391, 1.93297)
 size = Vector3(5, 1, 5)
-material = SubResource("StandardMaterial3D_b62ya")
+material = SubResource("StandardMaterial3D_loeny")
 block_color = 3
 
-[node name="ReflectanceMetallicBox" parent="." instance=ExtResource("3_vlbhk")]
+[node name="ReflectanceMetallicBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.64308, 1.5, 2.81997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_lk00f")
+material = SubResource("StandardMaterial3D_ksd5q")
 
-[node name="BigBox2" parent="." instance=ExtResource("3_vlbhk")]
+[node name="BigBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.51605, 2, 5.11998)
 size = Vector3(3, 2, 0.919922)
-material = SubResource("StandardMaterial3D_jaxrc")
+material = SubResource("StandardMaterial3D_537uu")
 
 [node name="RefCam" type="Camera3D" parent="BigBox2"]
 process_priority = 1
@@ -136,17 +136,17 @@ process_thread_messages = 0
 transform = Transform3D(-1, 0.000139626, -8.74228e-08, 0.000139626, 1, 1.22065e-11, 8.74228e-08, 0, -1, -0.0124431, 0.204882, 0.383633)
 visible = false
 
-[node name="BigBox" parent="." instance=ExtResource("3_vlbhk")]
+[node name="BigBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.07083, 1.5, 2.03997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_ff47q")
+material = SubResource("StandardMaterial3D_h2no8")
 
-[node name="WorldEnvironment" parent="." instance=ExtResource("6_2s1yp")]
+[node name="WorldEnvironment" parent="." instance=ExtResource("6_ivmnp")]
 
-[node name="CrouchBox2" parent="." instance=ExtResource("3_vlbhk")]
+[node name="CrouchBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.87094, 2.85492, 10.712)
 size = Vector3(1, 1, 5)
-material = SubResource("StandardMaterial3D_sf41g")
+material = SubResource("StandardMaterial3D_h38uv")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox2"]
@@ -156,29 +156,29 @@ font = SubResource("SystemFont_vgfho")
 font_size = 128
 uppercase = true
 
-[node name="Character" parent="." instance=ExtResource("1_xc835")]
+[node name="Character" parent="." instance=ExtResource("7_46v10")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 13.4907)
 
-[node name="ProtoCSGBox3D" parent="." instance=ExtResource("3_vlbhk")]
+[node name="ProtoCSGBox3D" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 20)
 size = Vector3(4, 2, 5)
-material = SubResource("StandardMaterial3D_ownmk")
+material = SubResource("StandardMaterial3D_5ql5p")
 block_color = 3
 
-[node name="ProtoCSGBox3D3" parent="." instance=ExtResource("3_vlbhk")]
+[node name="ProtoCSGBox3D3" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.5, 18.5)
 size = Vector3(4, 1, 2)
-material = SubResource("StandardMaterial3D_05iop")
+material = SubResource("StandardMaterial3D_mhlxc")
 block_color = 3
 
-[node name="ProtoCSGBox3D4" parent="." instance=ExtResource("3_vlbhk")]
+[node name="ProtoCSGBox3D4" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 21.5)
 size = Vector3(2, 1, 2)
-material = SubResource("StandardMaterial3D_hd3re")
+material = SubResource("StandardMaterial3D_mqfjo")
 block_color = 3
 
-[node name="ProtoCSGBox3D2" parent="." instance=ExtResource("3_vlbhk")]
+[node name="ProtoCSGBox3D2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, 20)
 size = Vector3(4, 4, 5)
-material = SubResource("StandardMaterial3D_q5cqy")
+material = SubResource("StandardMaterial3D_irq6y")
 block_color = 3
