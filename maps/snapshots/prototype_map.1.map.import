@@ -1,0 +1,14 @@
+[remap]
+
+importer="func_godot.map"
+type="Resource"
+uid="uid://mev0lur8ip4j"
+path="res://.godot/imported/prototype_map.1.map-a452386832bd291f919625976690f2ed.tres"
+
+[deps]
+
+source_file="res://maps/snapshots/prototype_map.1.map"
+dest_files=["res://.godot/imported/prototype_map.1.map-a452386832bd291f919625976690f2ed.tres"]
+
+[params]
+

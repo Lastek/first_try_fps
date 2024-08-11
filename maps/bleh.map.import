@@ -1,0 +1,14 @@
+[remap]
+
+importer="func_godot.map"
+type="Resource"
+uid="uid://c6yiysgs300nn"
+path="res://.godot/imported/bleh.map-f853cdabf5207d6802e980461a5a9086.tres"
+
+[deps]
+
+source_file="res://maps/bleh.map"
+dest_files=["res://.godot/imported/bleh.map-f853cdabf5207d6802e980461a5a9086.tres"]
+
+[params]
+

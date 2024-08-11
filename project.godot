@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="First Try FPS"
-run/main_scene="res://node_3d.tscn"
+run/main_scene="res://scenes/MainScene-QuitOnESC.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -33,7 +33,7 @@ project/assembly_name="First Try FPS"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 
 [input]
 

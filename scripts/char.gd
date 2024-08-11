@@ -13,6 +13,7 @@ const SPRINT_SPEED_MUL = 1.75
 
 const ACCELERATION = 1.25
 const ACCELERATION_AIR = .055555
+const DECELERATION = 0.4
 
 const CROUCH_SPEED = 1.0
 
@@ -116,8 +117,8 @@ func _physics_process(delta):
 	# Get the input direction and handle the movement/deceleration.
 	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
 	# Smooth out movement changes
-	input_dir = lerp(input_dir_prev, input_dir, FRICTION)
-	input_dir_prev = input_dir
+	#input_dir = lerp(input_dir_prev, input_dir, FRICTION)
+	#input_dir_prev = input_dir
 	Global.debug.add_property("input vector", input_dir, -1)
 	
 	# doing a basis transform and creating a normalized 3-vec	
@@ -141,20 +142,23 @@ func _physics_process(delta):
 
 	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
 	mouseInput = Vector2(0, 0)
-
+	### DEBUG ###
 	if speed > 40:
 		Global.debug.add_property("Broken :((( -> ", "", -1)
-
+	### ### ### #
 	# clam respective to x-axis ( cant look up and backwards)
 	PL_HEAD.rotation.x = clamp(PL_HEAD.rotation.x, deg_to_rad(-90), deg_to_rad(90))
+
 	Global.debug.add_property("rotated vec3", direction, -1)
-	
 	Global.debug.add_property("Velocity", velocity, -1)
 	
 	# give speed in facing direction with acceleration (faking friction)
-	velocity.x = lerp(velocity.x, direction.x * speed, accel)
-	velocity.z = lerp(velocity.z, direction.z * speed, accel)
-	
+	if direction:
+		velocity.x = lerp(velocity.x, direction.x * speed, accel)
+		velocity.z = lerp(velocity.z, direction.z * speed, accel)
+	else:
+		velocity.x = lerp(velocity.x, 0.0, DECELERATION)
+		velocity.z = lerp(velocity.z, 0.0, DECELERATION)
 	# set player states
 	_state(input_dir)
 
@@ -163,16 +167,25 @@ func _physics_process(delta):
 	Global.debug.add_property("speed", speed, -1)
 	# tracking when player was on floor.
 	# FIXME: This should be done as part of _state() 
-	# was_on_floor = is_on_floor()
+	was_on_floor = is_on_floor()
+	#input_dir_prev = direction
 
 # TODO: Pump events into a queue and then use that to set states accordingly
 # this should eliminate if statements for higher perf... supposedly.
 func _state(input_dir):
 	var touching_floor: int = is_on_floor()
+	
 	if touching_floor and Input.is_action_just_pressed(ACTIONS[JUMP]):
 		velocity.y += JUMP_VELOCITY  * JUMP_MUL
 		state_prev = state
 		state = STATE.JUMPING
+	# elif touching_floor and state == STATE.JUMPING:
+		## Swap the two variables
+		#@warning_ignore("int_as_enum_without_cast")
+		#state_prev ^= state
+		#@warning_ignore("int_as_enum_without_cast")
+		#state ^= state_prev
+		#state_prev ^=state
 	elif touching_floor and state == STATE.SPRINTING:
 		state_prev = state
 		speed = SPEED_BASE
@@ -182,13 +195,6 @@ func _state(input_dir):
 	elif Input.is_action_just_released(ACTIONS[CROUCH]):
 		handle_crouch(touching_floor,false)
 	# FIXME: Proper state handling
-	elif touching_floor and state == STATE.JUMPING:
-		# Swap the two variables
-		@warning_ignore("int_as_enum_without_cast")
-		state_prev ^= state
-		@warning_ignore("int_as_enum_without_cast")
-		state ^= state_prev
-		state_prev ^=state
 	# FIXME: Proper stae handling
 	# this will repeatedly trigger
 	elif touching_floor and Input.is_action_pressed(ACTIONS[SPRINT]):
