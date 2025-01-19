@@ -5,6 +5,7 @@
 # Thanks to StayAtHomeDev for his YouTube tutorials
 
 extends CharacterBody3D
+var myq = InputQueue
 
 enum STATE {IDLE = 0, NORMAL = 1, CROUCHED = 2, JUMPING = 4, SPRINTING = 8, CROUCHED_RUN = 16}
 
@@ -50,6 +51,7 @@ var DEBUG_STATE: Dictionary = {
 	STATE.SPRINTING: "sprinting",
 	STATE.CROUCHED_RUN: "courched_run"
 }
+
 var speed = SPEED_BASE
 var state: STATE = STATE.NORMAL
 var state_prev: STATE = STATE.NORMAL
@@ -109,7 +111,7 @@ func _physics_process(delta):
 	Global.debug.add_property("STATE", DEBUG_STATE[state], 1)
 	Global.debug.add_property("STATE_PREV", DEBUG_STATE[state_prev], 2)
 	var accel = ACCELERATION
-	
+
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
 		accel = ACCELERATION_AIR
@@ -159,6 +161,7 @@ func _physics_process(delta):
 	else:
 		velocity.x = lerp(velocity.x, 0.0, DECELERATION)
 		velocity.z = lerp(velocity.z, 0.0, DECELERATION)
+
 	# set player states
 	_state(input_dir)
 
@@ -174,50 +177,83 @@ func _physics_process(delta):
 # this should eliminate if statements for higher perf... supposedly.
 func _state(input_dir):
 	var touching_floor: int = is_on_floor()
-	
-	if touching_floor and Input.is_action_just_pressed(ACTIONS[JUMP]):
-		velocity.y += JUMP_VELOCITY  * JUMP_MUL
-		state_prev = state
-		state = STATE.JUMPING
-	# elif touching_floor and state == STATE.JUMPING:
-		## Swap the two variables
-		#@warning_ignore("int_as_enum_without_cast")
-		#state_prev ^= state
-		#@warning_ignore("int_as_enum_without_cast")
-		#state ^= state_prev
-		#state_prev ^=state
-	elif touching_floor and state == STATE.SPRINTING:
-		state_prev = state
-		speed = SPEED_BASE
-		state = STATE.NORMAL
+	## EACH STATEMENT MUST CHECK THE CURRENT STATE!!!
+
+	if Input.is_action_just_pressed(ACTIONS[JUMP]) and touching_floor:
+		set_state(STATE.JUMPING)
+		velocity.y += JUMP_VELOCITY * JUMP_MUL
+		
 	elif Input.is_action_pressed(ACTIONS[CROUCH]):
-		handle_crouch(touching_floor,true)
+		# set_state(STATE.CROUCHED)
+		handle_crouch(touching_floor, true)
+
 	elif Input.is_action_just_released(ACTIONS[CROUCH]):
-		handle_crouch(touching_floor,false)
-	# FIXME: Proper state handling
-	# FIXME: Proper stae handling
-	# this will repeatedly trigger
-	elif touching_floor and Input.is_action_pressed(ACTIONS[SPRINT]):
-		state_prev = state
-		speed = SPEED_BASE * SPRINT_SPEED_MUL
-		state = STATE.SPRINTING
+		# set_state(state_prev)
+		handle_crouch(touching_floor, false)
+
+	elif touching_floor and Input.is_action_just_pressed(ACTIONS[SPRINT]):
+		set_state(STATE.SPRINTING)
+
+	elif Input.is_action_just_released(ACTIONS[SPRINT]):
+		set_state(state_prev)
+
+	elif Input.is_action_just_released(ACTIONS[SPRINT]):
+		set_state(STATE.NORMAL)
+
+	elif state == STATE.JUMPING and touching_floor:
+		set_state(STATE.NORMAL)
+	
+	elif !input_dir:
+		set_state(STATE.IDLE)
+
+	elif input_dir and state == STATE.IDLE:
+		set_state(STATE.NORMAL)
+
+	set_speed()
+
+# I guess this is mostly used to make sure a state can be set
+func set_state(wish_state):
+	var old_state_prev = state_prev
+	state_prev = state
+	# TODO: verify state exists
+	match wish_state:
+		STATE.IDLE:
+			# put any necessary checks here, set idle anim
+			pass
+		STATE.NORMAL:
+			pass
+		STATE.CROUCHED:
+			pass
+		STATE.JUMPING:
+			pass
+		STATE.SPRINTING:
+			pass
+		STATE.CROUCHED_RUN:
+			pass
+		_: # wildcard: does not match anything
+			print("Error: set_state(): invalid state: ", wish_state)
+			wish_state = state_prev
+			state_prev = old_state_prev
+		
+	state = wish_state
 	set_speed()
 
 func handle_crouch(touching_floor: int, pressed: bool):
-	#player is either falling or jumping. Doesnt matter. Just shrink the player and go into crouch state
-	if pressed: #touching_floor:
+	#player is either falling or jumping. Doesnt matter.
+	#  Just shrink the player and go into crouch state
+	if pressed: # touching_floor:
 		if Input.is_action_just_pressed(ACTIONS[SPRINT]):
-			state_prev = state
-			state = STATE.CROUCHED_RUN
+			set_state(STATE.CROUCHED_RUN)
 		elif Input.is_action_pressed(ACTIONS[SPRINT]):
-			state_prev = state
-			state = STATE.CROUCHED_RUN
+			set_state(STATE.CROUCHED_RUN)
 		else:
-			state_prev = state
-			state = STATE.CROUCHED
+			set_state(STATE.CROUCHED)
 	elif !pressed:
-		state_prev = state
-		state = STATE.NORMAL
+		# do animation stuff
+		# check if allowed to uncrouch ie no obstacle
+		set_state(state_prev)
+		# state_prev = state
+		# state = STATE.NORMAL
 		
 # TODO: Replace with velocity boost that decays instead
 func set_speed():
@@ -225,12 +261,15 @@ func set_speed():
 	elif state == STATE.SPRINTING: speed = SPEED_BASE * SPRINT_SPEED_MUL
 	elif state == STATE.CROUCHED: speed = CROUCH_SPEED
 	elif state == STATE.CROUCHED_RUN: speed = CROUCH_SPEED * SPRINT_SPEED_MUL
+	
+func _input(event: InputEvent) -> void:
+	if event and event != InputEventMouseMotion:
+		pass
 
 func _unhandled_input(event):
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		mouseInput.x += event.relative.x * MOUSE_SENSITIVITY
 		mouseInput.y += event.relative.y * MOUSE_SENSITIVITY
-	# if event is Input.is_action_just_pressed()
 
 func check_flags(field: int) -> Array:
 	return []
