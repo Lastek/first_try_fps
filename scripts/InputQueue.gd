@@ -30,7 +30,7 @@ func enq(event: InputEvent) -> bool:
 	if STATE_FULL == state:
 		return false
 	# TODO: Issue #6 : Beware that event could be lost if this is a reference
-	# chekc if copy or reference _in implementation
+	# check if copy or reference _in implementation
 	buffer[_in] =event  
 	_in += 1
 	# _in = (_in) % BUFFER_SIZE

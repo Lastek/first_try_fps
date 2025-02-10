@@ -4,8 +4,8 @@
 # Based off of Colormatic Studio's FPC v2 
 # Thanks to StayAtHomeDev for his YouTube tutorials
 
-extends CharacterBody3D
-var myq = InputQueue
+class_name Character extends CharacterBody3D
+var myq := InputQueue
 
 enum STATE {IDLE = 0, NORMAL = 1, CROUCHED = 2, JUMPING = 4, SPRINTING = 8, CROUCHED_RUN = 16}
 
@@ -49,9 +49,12 @@ var DEBUG_STATE: Dictionary = {
 	STATE.CROUCHED: "crouched",
 	STATE.JUMPING: "jumping",
 	STATE.SPRINTING: "sprinting",
-	STATE.CROUCHED_RUN: "courched_run"
+	STATE.CROUCHED_RUN: "crouched_run"
 }
 
+var PLAYER_STATES: Dictionary = {
+
+}
 var speed = SPEED_BASE
 var state: STATE = STATE.NORMAL
 var state_prev: STATE = STATE.NORMAL
@@ -67,7 +70,7 @@ var was_on_floor: bool = false
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var GRAVITY = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-# Stores mouse input for rotating the camera in the phyhsics process
+# Stores mouse input for rotating the camera in the physics process
 var mouseInput: Vector2 = Vector2(0, 0)
 
 # this is problematic because this is not restricted to ACTIONS
@@ -93,7 +96,15 @@ CROUCH: "vk_crouch",
 SPRINT: "vk_sprint"
 }
 
+var PlayerStateIdle: State
+var PlayerStateWalk: State
+var FSM: StateMachine
 func _ready():
+	print("Player _ready():")
+	Global.player = self # provides reference to player
+	print("Init FSM")
+	initStates()
+	print("Get Player Node references")
 	PL_HEAD = get_node("Head")
 	PL_CAMERA = get_node("Head/Camera")
 	PL_MESH = get_node("Mesh")
@@ -102,9 +113,26 @@ func _ready():
 	AN_HEADBOB_EFFECT = get_node("Head/HeadbobAnimation")
 	AN_JUMP_EFFECT = get_node("Head/JumpAnimation")
 	AN_CROUCH_EFFECT = get_node("CrouchAnimation")
+	PL_CROUCH_CEILING_DETECTION.add_exception($".")
+	print("set up inputs")
 	controls_mapping_check()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	PL_CROUCH_CEILING_DETECTION.add_exception($".")
+	print("End Player _ready()")
+
+
+func initStates():
+	PlayerStateIdle = StateIdle.new()
+	PlayerStateWalk = StateWalk.new()
+
+	PlayerStateIdle.name = "PlayerStateIdle"
+	PlayerStateWalk.name = "PlayerStateWalk"
+
+	FSM = StateMachine.new()
+
+	FSM.add_child(PlayerStateIdle)
+	FSM.add_child(PlayerStateWalk)
+	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
+	
 	
 func _physics_process(delta):
 	# Add the gravity.
@@ -239,7 +267,7 @@ func set_state(wish_state):
 	set_speed()
 
 func handle_crouch(touching_floor: int, pressed: bool):
-	#player is either falling or jumping. Doesnt matter.
+	#player is either falling or jumping. doesn't matter.
 	#  Just shrink the player and go into crouch state
 	if pressed: # touching_floor:
 		if Input.is_action_just_pressed(ACTIONS[SPRINT]):
