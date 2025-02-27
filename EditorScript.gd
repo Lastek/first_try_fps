@@ -1,4 +1,5 @@
 @tool
+
 # https://docs.godotengine.org/en/stable/tutorials/plugins/running_code_in_the_editor.html#running-one-off-scripts-using-editorscript
 extends EditorScript
 

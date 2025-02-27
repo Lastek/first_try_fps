@@ -9,21 +9,6 @@ var myq := InputQueue
 
 enum STATE {IDLE = 0, NORMAL = 1, CROUCHED = 2, JUMPING = 4, SPRINTING = 8, CROUCHED_RUN = 16}
 
-const SPEED_BASE = 6.0
-const SPRINT_SPEED_MUL = 1.75
-
-const ACCELERATION = 1.25
-const ACCELERATION_AIR = .055555
-const DECELERATION = 0.4
-
-const CROUCH_SPEED = 1.0
-
-const JUMP_VELOCITY = 3.5
-const JUMP_MUL = 1.8
-var FRICTION = .8
-
-const MOUSE_SENSITIVITY = 0.1
-
 var PL_HEAD: Node3D
 var PL_CAMERA: Camera3D
 var PL_MESH: MeshInstance3D
@@ -55,18 +40,37 @@ var DEBUG_STATE: Dictionary = {
 var PLAYER_STATES: Dictionary = {
 
 }
+
+
+const SPEED_BASE = 6.0
+const SPRINT_SPEED_MUL = 1.75
+
+const ACCELERATION = 40 
+const ACCELERATION_AIR = .055555
+const DECELERATION = 30.0
+
+const CROUCH_SPEED = 1.0
+
+const JUMP_VELOCITY = 3.5
+const JUMP_MUL = 1.8
+var FRICTION = .8
+
+const MOUSE_SENSITIVITY = 0.1
+
 var speed = SPEED_BASE
 var state: STATE = STATE.NORMAL
 var state_prev: STATE = STATE.NORMAL
 
 var input_dir: Vector2
 var input_dir_prev: Vector2
+var direction: Vector3
 var crouched: bool = false
 var crouch_mode: bool = false
 
 var low_ceiling: bool = false
 var was_on_floor: bool = false
-
+var dir_lerp: Vector2 = Vector2(0.0, 0.0)
+var f_transform: Vector3 = Vector3(0.0, 0.0, 0.0)
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var GRAVITY = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -98,12 +102,14 @@ SPRINT: "vk_sprint"
 
 var PlayerStateIdle: State
 var PlayerStateWalk: State
+var PlayerStateSprint: State
 var FSM: StateMachine
+var frames = 0
+var dt_ac = 0.0
 func _ready():
 	print("Player _ready():")
 	Global.player = self # provides reference to player
 	print("Init FSM")
-	initStates()
 	print("Get Player Node references")
 	PL_HEAD = get_node("Head")
 	PL_CAMERA = get_node("Head/Camera")
@@ -116,57 +122,46 @@ func _ready():
 	PL_CROUCH_CEILING_DETECTION.add_exception($".")
 	print("set up inputs")
 	controls_mapping_check()
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	initStates()
+	initAnim()
+	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # This has been relocated to the main scene script
 	print("End Player _ready()")
 
 
 func initStates():
 	PlayerStateIdle = StateIdle.new()
 	PlayerStateWalk = StateWalk.new()
-
-	PlayerStateIdle.name = "PlayerStateIdle"
-	PlayerStateWalk.name = "PlayerStateWalk"
-
+	PlayerStateSprint = StateSprint.new()
+	## Prepare animations:
+	PlayerStateWalk.ANIMATION = AN_HEADBOB_EFFECT
+	PlayerStateSprint.ANIMATION = AN_HEADBOB_EFFECT
 	FSM = StateMachine.new()
 
 	FSM.add_child(PlayerStateIdle)
 	FSM.add_child(PlayerStateWalk)
 	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
 	
-	
-func _physics_process(delta):
-	# Add the gravity.
-	Global.debug.add_property("STATE", DEBUG_STATE[state], 1)
-	Global.debug.add_property("STATE_PREV", DEBUG_STATE[state_prev], 2)
-	var accel = ACCELERATION
+## Some housekeeping to make sure anims start correctly
+func initAnim():
+	AN_HEADBOB_EFFECT.play("RESET")	
 
-	if !is_on_floor():
-		velocity.y -= GRAVITY * delta * JUMP_MUL
-		accel = ACCELERATION_AIR
-
+func _process(delta: float) -> void:
+	frames += 1
+	dt_ac += delta
 	# Get the input direction and handle the movement/deceleration.
 	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
-	# Smooth out movement changes
-	#input_dir = lerp(input_dir_prev, input_dir, FRICTION)
-	#input_dir_prev = input_dir
 	Global.debug.add_property("input vector", input_dir, -1)
-	
 	# doing a basis transform and creating a normalized 3-vec	
-	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	Global.debug.add_property("direction vec", direction, -1)
-	
-	# PL_HEAD.rotate(Vector3(1,1,0), -mouseInput.x/PI*MOUSE_SENSITIVITY)
-	# PL_HEAD.rotate(Vector3(0,0,1), -mouseInput.y/PI*MOUSE_SENSITIVITY)
-
 	# Get the direction vector from mouse look
-	direction = input_dir.rotated(-PL_HEAD.rotation.y)
+	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y)
+	direction = Vector3(vec2.x, 0, vec2.y)
 	Global.debug.add_property("input rotated vec", direction, -1)
-
-	direction = Vector3(direction.x, 0, direction.y)
-	
-	# rotate player head based on mouse input
-	# NOTE: This does not rotate the body and needs to be handled differently
-	# perpendicular to z-axis
+	if frames >= 20:
+		Global.debug.add_property("FPS", frames/dt_ac, 0)
+		dt_ac = 0
+		frames = 0
 	PL_HEAD.rotation_degrees.x -= mouseInput.y
 	PL_HEAD.rotation_degrees.y -= mouseInput.x
 
@@ -181,15 +176,48 @@ func _physics_process(delta):
 
 	Global.debug.add_property("rotated vec3", direction, -1)
 	Global.debug.add_property("Velocity", velocity, -1)
-	
-	# give speed in facing direction with acceleration (faking friction)
-	if direction:
-		velocity.x = lerp(velocity.x, direction.x * speed, accel)
-		velocity.z = lerp(velocity.z, direction.z * speed, accel)
-	else:
-		velocity.x = lerp(velocity.x, 0.0, DECELERATION)
-		velocity.z = lerp(velocity.z, 0.0, DECELERATION)
+	# PL_HEAD.rotate(Vector3(1,1,0), -mouseInput.x/PI*MOUSE_SENSITIVITY)
+	# PL_HEAD.rotate(Vector3(0,0,1), -mouseInput.y/PI*MOUSE_SENSITIVITY)
 
+func i_physics_process(delta):
+	pass
+
+func r_physics_process(delta):
+	var accel = ACCELERATION
+	
+	if !is_on_floor():
+		velocity.y -= GRAVITY * delta * JUMP_MUL
+		accel = ACCELERATION_AIR
+
+	# Smooth out movement changes
+	#input_dir = lerp(input_dir_prev, input_dir, FRICTION)
+	#input_dir_prev = input_dir
+
+	# rotate player head based on mouse input
+	# NOTE: This does not rotate the body and needs to be handled differently
+	# perpendicular to z-axis
+		
+	# give speed in facing direction with acceleration (faking friction)
+	# how to do rampup for input vector to allow small taps. Taps vs Holding 
+	if direction:
+		velocity.x = lerp(velocity.x, direction.x * speed, delta*accel)
+		velocity.z = lerp(velocity.z, direction.z * speed, delta*accel)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, delta*DECELERATION)
+		velocity.z = move_toward(velocity.z, 0.0, delta*DECELERATION)
+		pass
+
+	var frict = FRICTION * delta
+	var spd = velocity.length()
+	var dv = 0
+	if (frict < spd):
+		dv = frict * -1 * (velocity / spd)
+	else:
+		dv = -velocity
+	velocity += dv
+
+	# This is a curious method for movement. Might be cool mechanic
+	# velocity = stop_motion_movement(velocity, direction, speed, accel, delta)
 	# set player states
 	_state(input_dir)
 
@@ -200,7 +228,27 @@ func _physics_process(delta):
 	# FIXME: This should be done as part of _state() 
 	was_on_floor = is_on_floor()
 	#input_dir_prev = direction
+func _physics_process(delta):
+	Global.debug.add_property("physics_fps", 1/delta, -1)
+	
 
+func stop_motion_movement(velocity:Vector3, direction:Vector3, speed:float, accel:float, delta:float):
+	if direction:
+		velocity.x = lerp(velocity.x, direction.x * speed, accel)
+		velocity.z = lerp(velocity.z, direction.z * speed, accel)
+	else:
+		velocity.x = lerp(velocity.x, 0.0, DECELERATION)
+		velocity.z = lerp(velocity.z, 0.0, DECELERATION)
+
+	var frict = FRICTION * delta
+	var spd = direction.length() 
+	var dv = 0
+	if (frict < spd):
+		dv = frict * -1 * (velocity / spd)
+	else:
+		dv = -velocity
+	velocity += dv
+	return velocity
 # TODO: Pump events into a queue and then use that to set states accordingly
 # this should eliminate if statements for higher perf... supposedly.
 func _state(input_dir):
@@ -291,13 +339,14 @@ func set_speed():
 	elif state == STATE.CROUCHED_RUN: speed = CROUCH_SPEED * SPRINT_SPEED_MUL
 	
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		mouseInput.x += event.relative.x * MOUSE_SENSITIVITY
+		mouseInput.y += event.relative.y * MOUSE_SENSITIVITY
 	if event and event != InputEventMouseMotion:
 		pass
 
 func _unhandled_input(event):
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		mouseInput.x += event.relative.x * MOUSE_SENSITIVITY
-		mouseInput.y += event.relative.y * MOUSE_SENSITIVITY
+	pass
 
 func check_flags(field: int) -> Array:
 	return []

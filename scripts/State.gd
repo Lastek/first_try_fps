@@ -1,22 +1,22 @@
-## Virtual base class for all states.
-## Extend this class and override its methods to implement a state.
+## virtual base class for all states.
+## extend this class and override its methods to implement a state.
 class_name State extends Node
 
-## Communication between state machine and states
+## communication between state machine and states; Callback to StateMachine
 signal transition(new_state_name: String)
 
-## Entry into state
+## entry into state; Called by StateMachine
 func enter() -> void:
 	pass
 
-## Per tick logic updates
+## per tick logic updates; Called by StateMachine
 func update(_delta: float) -> void:
 	pass
 
-## Per tick updates
+## Per tick updates; Called by StateMachine
 func physics_update(_delta: float) -> void:
 	pass
 
-## perform cleanup
+## perform cleanup; Called by StateMachine
 func exit() -> void:
 	pass
