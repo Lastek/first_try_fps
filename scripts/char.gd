@@ -12,6 +12,7 @@ var PL_CAMERA: Camera3D
 var PL_MESH: MeshInstance3D
 var PL_COLLISION_MESH: CollisionShape3D
 var PL_CROUCH_CEILING_DETECTION: Node3D
+var PL_VISUAL: Node3D
 var AN_HEADBOB_EFFECT: AnimationPlayer
 var AN_JUMP_EFFECT: AnimationPlayer
 var AN_CROUCH_EFFECT: AnimationPlayer
@@ -134,6 +135,7 @@ func ready_cont():
 	PL_MESH = get_node("../VisualPlayer/Mesh")
 	PL_COLLISION_MESH = get_node("Collision")
 	PL_CROUCH_CEILING_DETECTION = get_node("CrouchCeilingDetection")
+	PL_VISUAL = get_node("../VisualPlayer")
 	AN_HEADBOB_EFFECT = get_node("../VisualPlayer/Head/HeadbobAnimation")
 	AN_JUMP_EFFECT = get_node("../VisualPlayer/Head/JumpAnimation")
 	AN_CROUCH_EFFECT = get_node("../VisualPlayer/Head/CrouchAnimation")
@@ -167,39 +169,56 @@ func initAnim():
 func _physics_process(delta: float) -> void:
 	previous_physics_state = physics_state.duplicate()
 	Global.debug.add_property("Phys", delta, 0)
+	
 	# Handle input and physics
 	handle_input(delta)
 	integrate_physics(delta)
 	
-	# Store only physical state
+	# Store physics state
 	physics_time += delta
-	physics_state[PHYS_STATE.POSITION] = position
+	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
 	physics_state[PHYS_STATE.VELOCITY] = velocity
-	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
+	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation  # Head rotation from mouse input
 	physics_state[PHYS_STATE.TIME] = physics_time
 
-	Global.debug.add_property("Physics Position", position, 1)
+	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
 
 
 func _process(delta: float) -> void:
-
 	frames += 1
 	frames_dt_accumulator += delta
-
 	render_time += delta
+
+	# Calculate interpolation factor (alpha)
 	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / (physics_state[PHYS_STATE.TIME] - previous_physics_state[PHYS_STATE.TIME])
 	alpha = clampf(alpha, 0.0, 1.0)
 	
-	var interpolated_global_pos = previous_physics_state[PHYS_STATE.POSITION] + (
+	# Interpolate position
+	var interpolated_pos = previous_physics_state[PHYS_STATE.POSITION] + (
 		physics_state[PHYS_STATE.POSITION] - previous_physics_state[PHYS_STATE.POSITION]
 	) * alpha
 	
+	# Interpolate head rotation
+	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
+	var curr_rot = physics_state[PHYS_STATE.ROTATION]
+	var interpolated_rot = Vector3(
+		lerpf(prev_rot.x, curr_rot.x, alpha),
+		lerpf(prev_rot.y, curr_rot.y, alpha),
+		lerpf(prev_rot.z, curr_rot.z, alpha)
+	)
+	
+	# Apply to VisualPlayer
+	PL_VISUAL.global_position = interpolated_pos
+	PL_HEAD.rotation = interpolated_rot
+	
 	update_debug_info()
 	if spin > 0:
-		OS.delay_msec(spin*10)
-	Global.debug.add_property("Render Position", position, 3)
+		for i in range(spin*10000):
+			var j = i
 
+	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
+	
 func integrate_physics(delta):
 	var accel = ACCELERATION
 	# var dt = delta
@@ -290,10 +309,10 @@ func handle_mouse_input() -> void:
 
 
 ## Just to see what starts first and when things execute
-func f_tracker(str:String)-> void:
+func f_tracker(s:String)-> void:
 	if tracker > 10 and tracker < 100:
 		tracker += 1
-		print("Tracker in %s: " %  str,tracker)
+		print("Tracker in %s: " %  s,tracker)
 	else: tracker +=1
 
 

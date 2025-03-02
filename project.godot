@@ -24,7 +24,6 @@ Global="*res://scripts/global.gd"
 
 window/size/viewport_width=1600
 window/size/viewport_height=900
-window/size/mode=4
 window/size/initial_position=Vector2i(0, 200)
 window/size/initial_screen=1
 window/energy_saving/keep_screen_on=false
@@ -112,7 +111,7 @@ vk_bracket_left={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=250
+common/physics_ticks_per_second=125
 common/physics_jitter_fix=0.0
 
 [rendering]

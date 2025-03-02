@@ -14,7 +14,7 @@ extends Node
 
 @export_group("Nodes")
 @export var CHARACTER : CharacterBody3D
-@export var head_path : String = "Head" # From this nodes parent node
+@export var head_path : String = "../VisualPlayer/Head" # From this nodes parent node
 #@export var CAMERA : Camera3D
 #@export var HEADBOB_ANIMATION : AnimationPlayer
 #@export var JUMP_ANIMATION : AnimationPlayer
@@ -25,7 +25,7 @@ var HEAD
 
 
 func _ready():
-	HEAD = get_node("../" + head_path)
+	HEAD = get_node(head_path)
 	if Engine.is_editor_hint():
 		pass
 	else:
