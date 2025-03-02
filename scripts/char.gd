@@ -82,7 +82,7 @@ var PlayerStateWalk: State
 var PlayerStateSprint: State
 var FSM: StateMachine
 var frames = 0
-var dt_ac = 0.0
+var frames_dt_accumulator = 0.0
 @onready var dt = Engine.physics_ticks_per_second / 1000
 var physics_time = 0.0
 #==============================================================================
@@ -106,6 +106,7 @@ func _ready():
 	# Initialize arrays with correct size
 	physics_state.resize(PHYS_STATE.SIZE)
 	previous_physics_state.resize(PHYS_STATE.SIZE)
+	ready_cont()
 
 	# Initialize default values
 	physics_time = Time.get_ticks_usec() / 1000000.0
@@ -118,7 +119,6 @@ func _ready():
 	previous_physics_state = physics_state.duplicate()
 
 	# ... rest of your _ready() code ...
-	ready_cont()
 
 
 func ready_cont():
@@ -180,9 +180,11 @@ func _physics_process(delta: float) -> void:
 	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
 	physics_state[PHYS_STATE.TIME] = physics_time
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	frames += 1
+	frames_dt_accumulator += delta
 	var render_time = Time.get_ticks_usec() / 1000000.0
-	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / PHYSICS_DT
+	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / dt
 	alpha = clampf(alpha, 0.0, 1.0)
 	
 	var snapshot_position = previous_physics_state[PHYS_STATE.POSITION] + (
@@ -204,18 +206,6 @@ func handle_visual_effects(interpolated_direction: Vector3) -> void:
 		if AN_HEADBOB_EFFECT.is_playing():
 			AN_HEADBOB_EFFECT.stop()
 
-func update_debug_info() -> void:
-	if frames >= 20:
-		Global.debug.add_property("FPS", frames/dt_ac, 0)
-		dt_ac = 0
-		frames = 0
-
-	# Show both current input and physics state input
-	Global.debug.add_property("current input", current_input["input_dir"], -1)
-	Global.debug.add_property("physics input", physics_state[PHYS_STATE.INPUT_DIR], -1)
-	Global.debug.add_property("physics direction", physics_state[PHYS_STATE.DIRECTION], -1)
-	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
-	Global.debug.add_property("Velocity", velocity, -1)
 # func _physics_process(delta: float) -> void:
 # 	f_tracker("physics")
 # 	# Store previous state
@@ -238,7 +228,7 @@ func update_debug_info() -> void:
 
 # func _process(delta: float) -> void:
 # 	frames += 1
-# 	dt_ac += delta
+# 	frames_dt_accumulator += delta
 # 	f_tracker("process-")
 # 	# Get current render time
 # 	var render_time = Time.get_ticks_usec() / 1000000.0
@@ -296,8 +286,8 @@ func integrate_physics(delta):
 # Move debug info to separate function:
 func update_debug_info() -> void:
 	if frames >= 40:
-		Global.debug.add_property("FPS", frames/dt_ac, 0)
-		dt_ac = 0
+		Global.debug.add_property("FPS", frames/frames_dt_accumulator, 0)
+		frames_dt_accumulator = 0
 		frames = 0
 
 	Global.debug.add_property("input vector", input_dir, -1)
