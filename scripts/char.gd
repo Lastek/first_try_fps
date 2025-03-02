@@ -87,6 +87,7 @@ var PlayerStateIdle: State
 var PlayerStateWalk: State
 var PlayerStateSprint: State
 var FSM: StateMachine
+
 var frames = 0
 var frames_dt_accumulator = 0.0
 var dt = 1.0/Engine.physics_ticks_per_second
@@ -107,6 +108,7 @@ enum PHYS_STATE {
 var physics_state: Array = []
 var previous_physics_state: Array = []
 var tracker = 0
+
 func _ready():
 	# Initialize arrays with correct size
 	physics_state.resize(PHYS_STATE.SIZE)
@@ -142,13 +144,13 @@ func ready_cont():
 	PL_CROUCH_CEILING_DETECTION.add_exception($".")
 	print("set up inputs")
 	controls_mapping_check()
-	initStates()
+	init_state_machine()
 	initAnim()
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # This has been relocated to the main scene script
 	print("End Player _ready()")
 
 
-func initStates():
+func init_state_machine():
 	PlayerStateIdle = StateIdle.new()
 	PlayerStateWalk = StateWalk.new()
 	PlayerStateSprint = StateSprint.new()
@@ -159,7 +161,7 @@ func initStates():
 
 	FSM.add_child(PlayerStateIdle)
 	FSM.add_child(PlayerStateWalk)
-	# add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
+	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
 
 ## Some housekeeping to make sure anims start correctly
 func initAnim():

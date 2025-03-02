@@ -344,7 +344,7 @@ MarginContainer/constants/margin_left = 10
 MarginContainer/constants/margin_right = 10
 MarginContainer/constants/margin_top = 10
 
-[node name="Node3D" type="Node3D"]
+[node name="PlayerRoot" type="Node3D"]
 
 [node name="Character" type="CharacterBody3D" parent="."]
 script = ExtResource("1_627hw")
@@ -378,6 +378,8 @@ update_mode = 1
 max_distance = 15.4
 size = Vector3(40, 40, 40)
 box_projection = true
+
+[node name="Weapon" type="Node3D" parent="VisualPlayer/Head"]
 
 [node name="HeadbobAnimation" type="AnimationPlayer" parent="VisualPlayer/Head"]
 libraries = {
