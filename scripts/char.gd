@@ -1,13 +1,11 @@
-# Author: Lastek 
-# FP controller 
+# Author: Lastek
+# FP controller
 # MIT License
-# Based off of Colormatic Studio's FPC v2 
+# Based off of Colormatic Studio's FPC v2
 # Thanks to StayAtHomeDev for his YouTube tutorials
 
 class_name Character extends CharacterBody3D
 var myq := InputQueue
-
-enum STATE {IDLE = 0, NORMAL = 1, CROUCHED = 2, JUMPING = 4, SPRINTING = 8, CROUCHED_RUN = 16}
 
 var PL_HEAD: Node3D
 var PL_CAMERA: Camera3D
@@ -22,30 +20,11 @@ var AN_JUMP_EFFECT_AMOUNT: float = 1.0
 var AN_HEADBOB_EFFECT_AMOUNT: float = 1.0
 var AN_ENABLED: bool = true # This wont apply to crouching the way it's done rn.
 
-#const BIT_TABLE_BITS = 8
-#var BIT_TABLE: Array = range(BIT_TABLE_BITS).map(func(n): return 2**n)
-#func compute_bit_table(bits:int):
-	#BIT_TABLE = range(bits).map(func(n): return 2**n)
-# enum STATE {NORMAL, CROUCHED, SPRINTING, CROUCHED_RUN}
-
-var DEBUG_STATE: Dictionary = {
-	STATE.IDLE: "idle",
-	STATE.NORMAL: "normal",
-	STATE.CROUCHED: "crouched",
-	STATE.JUMPING: "jumping",
-	STATE.SPRINTING: "sprinting",
-	STATE.CROUCHED_RUN: "crouched_run"
-}
-
-var PLAYER_STATES: Dictionary = {
-
-}
-
 
 const SPEED_BASE = 6.0
 const SPRINT_SPEED_MUL = 1.75
 
-const ACCELERATION = 40 
+const ACCELERATION = 40
 const ACCELERATION_AIR = .055555
 const DECELERATION = 30.0
 
@@ -58,8 +37,6 @@ var FRICTION = .8
 const MOUSE_SENSITIVITY = 0.1
 
 var speed = SPEED_BASE
-var state: STATE = STATE.NORMAL
-var state_prev: STATE = STATE.NORMAL
 
 var input_dir: Vector2
 var input_dir_prev: Vector2
@@ -106,7 +83,45 @@ var PlayerStateSprint: State
 var FSM: StateMachine
 var frames = 0
 var dt_ac = 0.0
+@onready var dt = Engine.physics_ticks_per_second / 1000
+var physics_time = 0.0
+#==============================================================================
+#==============================================================================
+
+enum PHYS_STATE {
+	POSITION,
+	VELOCITY,
+	ROTATION,
+	INPUT_DIR,  # Add input state
+	DIRECTION,  # Add processed direction
+	TIME,
+	SIZE
+}
+
+# Fixed-size arrays for physics states
+var physics_state: Array = []
+var previous_physics_state: Array = []
+var tracker = 0
 func _ready():
+	# Initialize arrays with correct size
+	physics_state.resize(PHYS_STATE.SIZE)
+	previous_physics_state.resize(PHYS_STATE.SIZE)
+
+	# Initialize default values
+	physics_time = Time.get_ticks_usec() / 1000000.0
+	physics_state[PHYS_STATE.POSITION] = position
+	physics_state[PHYS_STATE.VELOCITY] = velocity
+	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
+	physics_state[PHYS_STATE.INPUT_DIR] = Vector2.ZERO
+	physics_state[PHYS_STATE.DIRECTION] = Vector3.ZERO
+	physics_state[PHYS_STATE.TIME] = physics_time
+	previous_physics_state = physics_state.duplicate()
+
+	# ... rest of your _ready() code ...
+	ready_cont()
+
+
+func ready_cont():
 	print("Player _ready():")
 	Global.player = self # provides reference to player
 	print("Init FSM")
@@ -139,73 +154,129 @@ func initStates():
 
 	FSM.add_child(PlayerStateIdle)
 	FSM.add_child(PlayerStateWalk)
-	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
-	
+	# add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
+
 ## Some housekeeping to make sure anims start correctly
 func initAnim():
-	AN_HEADBOB_EFFECT.play("RESET")	
+	AN_HEADBOB_EFFECT.play("RESET")
 
-func _process(delta: float) -> void:
-	frames += 1
-	dt_ac += delta
-	# Get the input direction and handle the movement/deceleration.
-	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
-	Global.debug.add_property("input vector", input_dir, -1)
-	# doing a basis transform and creating a normalized 3-vec	
-	direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	Global.debug.add_property("direction vec", direction, -1)
-	# Get the direction vector from mouse look
-	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y)
-	direction = Vector3(vec2.x, 0, vec2.y)
-	Global.debug.add_property("input rotated vec", direction, -1)
+
+# Current input state that will be used in next physics step
+var current_input: Dictionary = {
+	"input_dir": Vector2.ZERO,
+	"direction": Vector3.ZERO
+}
+
+func _physics_process(delta: float) -> void:
+	previous_physics_state = physics_state.duplicate()
+	
+	# Handle input before physics integration
+	handle_input(delta)
+	integrate_physics(delta)
+	
+	physics_time += delta
+	physics_state[PHYS_STATE.POSITION] = position
+	physics_state[PHYS_STATE.VELOCITY] = velocity
+	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
+	physics_state[PHYS_STATE.TIME] = physics_time
+
+func _process(_delta: float) -> void:
+	var render_time = Time.get_ticks_usec() / 1000000.0
+	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / PHYSICS_DT
+	alpha = clampf(alpha, 0.0, 1.0)
+	
+	var snapshot_position = previous_physics_state[PHYS_STATE.POSITION] + (
+		physics_state[PHYS_STATE.POSITION] - 
+		previous_physics_state[PHYS_STATE.POSITION]
+	) * alpha
+	
+	position = snapshot_position
+	update_debug_info()
+
+# New function for handling visual effects based on interpolated state
+func handle_visual_effects(interpolated_direction: Vector3) -> void:
+	# Handle any visual effects that depend on movement direction
+	# For example: head bobbing, particle effects, etc.
+	if AN_ENABLED and interpolated_direction.length() > 0.1:
+		if !AN_HEADBOB_EFFECT.is_playing():
+			AN_HEADBOB_EFFECT.play("headbob")
+	else:
+		if AN_HEADBOB_EFFECT.is_playing():
+			AN_HEADBOB_EFFECT.stop()
+
+func update_debug_info() -> void:
 	if frames >= 20:
 		Global.debug.add_property("FPS", frames/dt_ac, 0)
 		dt_ac = 0
 		frames = 0
-	PL_HEAD.rotation_degrees.x -= mouseInput.y
-	PL_HEAD.rotation_degrees.y -= mouseInput.x
 
+	# Show both current input and physics state input
+	Global.debug.add_property("current input", current_input["input_dir"], -1)
+	Global.debug.add_property("physics input", physics_state[PHYS_STATE.INPUT_DIR], -1)
+	Global.debug.add_property("physics direction", physics_state[PHYS_STATE.DIRECTION], -1)
 	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
-	mouseInput = Vector2(0, 0)
-	### DEBUG ###
-	if speed > 40:
-		Global.debug.add_property("Broken :((( -> ", "", -1)
-	### ### ### #
-	# clam respective to x-axis ( cant look up and backwards)
-	PL_HEAD.rotation.x = clamp(PL_HEAD.rotation.x, deg_to_rad(-90), deg_to_rad(90))
-
-	Global.debug.add_property("rotated vec3", direction, -1)
 	Global.debug.add_property("Velocity", velocity, -1)
-	# PL_HEAD.rotate(Vector3(1,1,0), -mouseInput.x/PI*MOUSE_SENSITIVITY)
-	# PL_HEAD.rotate(Vector3(0,0,1), -mouseInput.y/PI*MOUSE_SENSITIVITY)
+# func _physics_process(delta: float) -> void:
+# 	f_tracker("physics")
+# 	# Store previous state
+# 	previous_physics_state = physics_state.duplicate()
 
-func i_physics_process(delta):
-	pass
+# 	# Run physics simulation
+# 	r_physics_process(delta)
 
-func r_physics_process(delta):
+# 	# Update physics state
+# 	physics_time += delta	
+# 	physics_state[PHYS_STATE.POSITION] = position
+# 	physics_state[PHYS_STATE.VELOCITY] = velocity
+# 	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
+# 	physics_state[PHYS_STATE.TIME] = physics_time
+
+# 	### DEBUG ###
+# 	if velocity.length() > 40:
+# 		Global.debug.add_property("Broken :((( -> ", "", -1)
+# 	### ### ### #
+
+# func _process(delta: float) -> void:
+# 	frames += 1
+# 	dt_ac += delta
+# 	f_tracker("process-")
+# 	# Get current render time
+# 	var render_time = Time.get_ticks_usec() / 1000000.0
+
+# 	# Calculate alpha between physics frames
+# 	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / dt
+# 	alpha = clampf(alpha, 0.0, 1.0)
+
+# 	# Update input
+# 	# handle_mouse_input()
+# 	handle_input(delta)
+# 	# Interpolate between physics states
+# 	var snapshot_position = previous_physics_state[PHYS_STATE.POSITION] + (
+# 		physics_state[PHYS_STATE.POSITION] - 
+# 		previous_physics_state[PHYS_STATE.POSITION]
+# 	) * alpha
+# 	# Apply snapshot values
+# 	position = snapshot_position
+# 	# Handle other non-physics updates
+# 	update_debug_info()
+
+func integrate_physics(delta):
 	var accel = ACCELERATION
-	
+	# var dt = delta
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
 		accel = ACCELERATION_AIR
 
-	# Smooth out movement changes
-	#input_dir = lerp(input_dir_prev, input_dir, FRICTION)
-	#input_dir_prev = input_dir
-
-	# rotate player head based on mouse input
-	# NOTE: This does not rotate the body and needs to be handled differently
-	# perpendicular to z-axis
-		
-	# give speed in facing direction with acceleration (faking friction)
-	# how to do rampup for input vector to allow small taps. Taps vs Holding 
+ 	# give speed in facing direction with acceleration (faking friction)
+ 	# how to do rampup for input vector to allow small taps. Taps vs Holding
 	if direction:
-		velocity.x = lerp(velocity.x, direction.x * speed, delta*accel)
-		velocity.z = lerp(velocity.z, direction.z * speed, delta*accel)
+		#velocity.x = lerp(velocity.x, direction.x * speed, delta*accel)
+		#velocity.z = lerp(velocity.z, direction.z * speed, delta*accel)
+		velocity.z = velocity.z+(direction.z*speed - velocity.z)*delta*accel
+		velocity.x = velocity.x+(direction.x*speed - velocity.x)*delta*accel
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, delta*DECELERATION)
 		velocity.z = move_toward(velocity.z, 0.0, delta*DECELERATION)
-		pass
 
 	var frict = FRICTION * delta
 	var spd = velocity.length()
@@ -216,128 +287,24 @@ func r_physics_process(delta):
 		dv = -velocity
 	velocity += dv
 
-	# This is a curious method for movement. Might be cool mechanic
-	# velocity = stop_motion_movement(velocity, direction, speed, accel, delta)
-	# set player states
-	_state(input_dir)
-
-	# built-in func
+ 	# This is a curious method for movement. Might be cool mechanic
+ 	# velocity = stop_motion_movement(velocity, direction, speed, accel, delta)
 	move_and_slide()
 	Global.debug.add_property("speed", speed, -1)
-	# tracking when player was on floor.
-	# FIXME: This should be done as part of _state() 
-	was_on_floor = is_on_floor()
-	#input_dir_prev = direction
-func _physics_process(delta):
-	Global.debug.add_property("physics_fps", 1/delta, -1)
-	
 
-func stop_motion_movement(velocity:Vector3, direction:Vector3, speed:float, accel:float, delta:float):
-	if direction:
-		velocity.x = lerp(velocity.x, direction.x * speed, accel)
-		velocity.z = lerp(velocity.z, direction.z * speed, accel)
-	else:
-		velocity.x = lerp(velocity.x, 0.0, DECELERATION)
-		velocity.z = lerp(velocity.z, 0.0, DECELERATION)
 
-	var frict = FRICTION * delta
-	var spd = direction.length() 
-	var dv = 0
-	if (frict < spd):
-		dv = frict * -1 * (velocity / spd)
-	else:
-		dv = -velocity
-	velocity += dv
-	return velocity
-# TODO: Pump events into a queue and then use that to set states accordingly
-# this should eliminate if statements for higher perf... supposedly.
-func _state(input_dir):
-	var touching_floor: int = is_on_floor()
-	## EACH STATEMENT MUST CHECK THE CURRENT STATE!!!
+# Move debug info to separate function:
+func update_debug_info() -> void:
+	if frames >= 40:
+		Global.debug.add_property("FPS", frames/dt_ac, 0)
+		dt_ac = 0
+		frames = 0
 
-	if Input.is_action_just_pressed(ACTIONS[JUMP]) and touching_floor:
-		set_state(STATE.JUMPING)
-		velocity.y += JUMP_VELOCITY * JUMP_MUL
-		
-	elif Input.is_action_pressed(ACTIONS[CROUCH]):
-		# set_state(STATE.CROUCHED)
-		handle_crouch(touching_floor, true)
+	Global.debug.add_property("input vector", input_dir, -1)
+	Global.debug.add_property("direction vec", direction, -1)
+	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
+	Global.debug.add_property("Velocity", velocity, -1)
 
-	elif Input.is_action_just_released(ACTIONS[CROUCH]):
-		# set_state(state_prev)
-		handle_crouch(touching_floor, false)
-
-	elif touching_floor and Input.is_action_just_pressed(ACTIONS[SPRINT]):
-		set_state(STATE.SPRINTING)
-
-	elif Input.is_action_just_released(ACTIONS[SPRINT]):
-		set_state(state_prev)
-
-	elif Input.is_action_just_released(ACTIONS[SPRINT]):
-		set_state(STATE.NORMAL)
-
-	elif state == STATE.JUMPING and touching_floor:
-		set_state(STATE.NORMAL)
-	
-	elif !input_dir:
-		set_state(STATE.IDLE)
-
-	elif input_dir and state == STATE.IDLE:
-		set_state(STATE.NORMAL)
-
-	set_speed()
-
-# I guess this is mostly used to make sure a state can be set
-func set_state(wish_state):
-	var old_state_prev = state_prev
-	state_prev = state
-	# TODO: verify state exists
-	match wish_state:
-		STATE.IDLE:
-			# put any necessary checks here, set idle anim
-			pass
-		STATE.NORMAL:
-			pass
-		STATE.CROUCHED:
-			pass
-		STATE.JUMPING:
-			pass
-		STATE.SPRINTING:
-			pass
-		STATE.CROUCHED_RUN:
-			pass
-		_: # wildcard: does not match anything
-			print("Error: set_state(): invalid state: ", wish_state)
-			wish_state = state_prev
-			state_prev = old_state_prev
-		
-	state = wish_state
-	set_speed()
-
-func handle_crouch(touching_floor: int, pressed: bool):
-	#player is either falling or jumping. doesn't matter.
-	#  Just shrink the player and go into crouch state
-	if pressed: # touching_floor:
-		if Input.is_action_just_pressed(ACTIONS[SPRINT]):
-			set_state(STATE.CROUCHED_RUN)
-		elif Input.is_action_pressed(ACTIONS[SPRINT]):
-			set_state(STATE.CROUCHED_RUN)
-		else:
-			set_state(STATE.CROUCHED)
-	elif !pressed:
-		# do animation stuff
-		# check if allowed to uncrouch ie no obstacle
-		set_state(state_prev)
-		# state_prev = state
-		# state = STATE.NORMAL
-		
-# TODO: Replace with velocity boost that decays instead
-func set_speed():
-	if state == STATE.NORMAL: speed = SPEED_BASE
-	elif state == STATE.SPRINTING: speed = SPEED_BASE * SPRINT_SPEED_MUL
-	elif state == STATE.CROUCHED: speed = CROUCH_SPEED
-	elif state == STATE.CROUCHED_RUN: speed = CROUCH_SPEED * SPRINT_SPEED_MUL
-	
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		mouseInput.x += event.relative.x * MOUSE_SENSITIVITY
@@ -345,11 +312,52 @@ func _input(event: InputEvent) -> void:
 	if event and event != InputEventMouseMotion:
 		pass
 
+
+func handle_input(delta: float) -> void:
+	# Get the input direction and handle the movement/deceleration.
+	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
+	Global.debug.add_property("input vector", input_dir, -1)
+	
+	# doing a basis transform and creating a normalized 3-vec
+	direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	Global.debug.add_property("direction vec", direction, -1)
+	
+	# Get the direction vector from mouse look
+	handle_mouse_input()
+	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y)
+	direction = Vector3(vec2.x, 0, vec2.y)
+
+	Global.debug.add_property("input rotated vec", direction, -1)
+	Global.debug.add_property("rotated vec3", direction, -1)
+	Global.debug.add_property("Velocity", velocity, -1)
+
+
+# Move mouse handling to separate function:
+func handle_mouse_input() -> void:
+	PL_HEAD.rotation_degrees.x -= mouseInput.y
+	PL_HEAD.rotation_degrees.y -= mouseInput.x
+	PL_HEAD.rotation.x = clamp(PL_HEAD.rotation.x, deg_to_rad(-90), deg_to_rad(90))
+	mouseInput = Vector2.ZERO
+
+
+## Just to see what starts first and when things execute
+func f_tracker(str:String)-> void:
+	if tracker > 10 and tracker < 100:
+		tracker += 1
+		print("Tracker in %s: " %  str,tracker)
+	else: tracker +=1
+
+
+func calculate_alpha(current_time: float) -> float: 
+	var physics_delta = physics_state[PHYS_STATE.TIME] - previous_physics_state[PHYS_STATE.TIME]
+	if physics_delta <= 0:
+		return 1.0
+	var time_since_physics = current_time - previous_physics_state[PHYS_STATE.TIME]
+	return clampf(time_since_physics / physics_delta, 0.0, 1.0)
+
+
 func _unhandled_input(event):
 	pass
-
-func check_flags(field: int) -> Array:
-	return []
 
 # Checks that actions are mapped events and that events are mapped to keys
 func controls_mapping_check():
@@ -363,3 +371,4 @@ func controls_mapping_check():
 			if v.is_empty():
 				push_error("No key mapped to the following action: ", k)
 				print("No key mapped to the following action: ", k)
+

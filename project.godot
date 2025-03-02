@@ -13,7 +13,6 @@ config_version=5
 config/name="First Try FPS"
 run/main_scene="res://scenes/MainScene-QuitOnESC.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
-run/max_fps=15
 run/delta_smoothing=false
 config/icon="res://icon.svg"
 
@@ -101,7 +100,7 @@ vk_debug={
 
 [physics]
 
-common/physics_ticks_per_second=20
+common/physics_ticks_per_second=125
 common/physics_jitter_fix=0.0
 
 [rendering]
