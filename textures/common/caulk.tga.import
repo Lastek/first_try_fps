@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://chcme2v8gac8e"
 path.s3tc="res://.godot/imported/caulk.tga-5e03ad60d6b455de18e0386c3f8594f8.s3tc.ctex"
+path.etc2="res://.godot/imported/caulk.tga-5e03ad60d6b455de18e0386c3f8594f8.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://textures/common/caulk.tga"
-dest_files=["res://.godot/imported/caulk.tga-5e03ad60d6b455de18e0386c3f8594f8.s3tc.ctex"]
+dest_files=["res://.godot/imported/caulk.tga-5e03ad60d6b455de18e0386c3f8594f8.s3tc.ctex", "res://.godot/imported/caulk.tga-5e03ad60d6b455de18e0386c3f8594f8.etc2.ctex"]
 
 [params]
 

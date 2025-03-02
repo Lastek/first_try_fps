@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://g2lecncgu7nx"
 path.s3tc="res://.godot/imported/notex.tga-72c9ef79b6dada1a935a3d134f208229.s3tc.ctex"
+path.etc2="res://.godot/imported/notex.tga-72c9ef79b6dada1a935a3d134f208229.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://textures/radiant/notex.tga"
-dest_files=["res://.godot/imported/notex.tga-72c9ef79b6dada1a935a3d134f208229.s3tc.ctex"]
+dest_files=["res://.godot/imported/notex.tga-72c9ef79b6dada1a935a3d134f208229.s3tc.ctex", "res://.godot/imported/notex.tga-72c9ef79b6dada1a935a3d134f208229.etc2.ctex"]
 
 [params]
 
