@@ -1,4 +1,4 @@
-[gd_scene load_steps=138 format=3 uid="uid://dktlakt1nm6u1"]
+[gd_scene load_steps=140 format=3 uid="uid://dktlakt1nm6u1"]
 
 [ext_resource type="Script" path="res://scenes/MainTestScene.gd" id="1_xqpsn"]
 [ext_resource type="Texture2D" uid="uid://dl567gulrbij6" path="res://addons/proto-csgs/textures/light/texture_09.png" id="2_48v0d"]
@@ -10,12 +10,14 @@
 [ext_resource type="Script" path="res://addons/func_godot/src/map/func_godot_map.gd" id="8_hjxpw"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="9_stbyn"]
 [ext_resource type="Texture2D" uid="uid://cyg2snr1w5xw5" path="res://textures/default_texture.png" id="10_33dv6"]
+[ext_resource type="PackedScene" uid="uid://fvhbv0w4ybf" path="res://scenes/jitter_mon.tscn" id="11_p2vud"]
+[ext_resource type="PackedScene" uid="uid://bkffjngecu2xd" path="res://scenes/lissajous.tscn" id="12_66d5l"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dwqnk"]
 albedo_texture = ExtResource("2_48v0d")
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6ysxd"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bxsdv"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
@@ -25,7 +27,7 @@ uv1_triplanar = true
 
 [sub_resource type="SystemFont" id="SystemFont_vgfho"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jd0o4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6rmq5"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
@@ -33,7 +35,7 @@ normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m2frp"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6kr3p"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("5_yjg44")
 metallic = 0.64
@@ -46,19 +48,19 @@ subsurf_scatter_transmittance_boost = 0.14
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_50eov"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x0fa4"]
 render_priority = 1
 albedo_color = Color(0.823212, 0.823212, 0.823212, 1)
 albedo_texture = ExtResource("5_yjg44")
 roughness = 0.11
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2nv7s"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cgtii"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("5_yjg44")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rkpse"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vw1jw"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 metallic = 0.14
@@ -66,25 +68,25 @@ normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0jbu5"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_62fms"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2n8js"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0gnwo"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p2h1g"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k67g8"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1mu5n"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_80my6"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
@@ -464,7 +466,7 @@ size = Vector3(60, 1, 60)
 [node name="CrouchBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 0.999988, -0.00499162, 0, 0.00499162, 0.999988, -10.6811, 2.68031, 10.866)
 size = Vector3(1.42188, 1, 5)
-material = SubResource("StandardMaterial3D_6ysxd")
+material = SubResource("StandardMaterial3D_bxsdv")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox"]
@@ -478,18 +480,18 @@ uppercase = true
 [node name="HopBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.94601, 1.01391, 1.93297)
 size = Vector3(5, 1, 5)
-material = SubResource("StandardMaterial3D_jd0o4")
+material = SubResource("StandardMaterial3D_6rmq5")
 block_color = 3
 
 [node name="ReflectanceMetallicBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.64308, 1.5, 2.81997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_m2frp")
+material = SubResource("StandardMaterial3D_6kr3p")
 
 [node name="BigBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.51605, 2, 5.11998)
 size = Vector3(3, 2, 0.919922)
-material = SubResource("StandardMaterial3D_50eov")
+material = SubResource("StandardMaterial3D_x0fa4")
 
 [node name="RefCam" type="Camera3D" parent="BigBox2"]
 process_priority = 1
@@ -502,14 +504,14 @@ visible = false
 [node name="BigBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.07083, 1.5, 2.03997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_2nv7s")
+material = SubResource("StandardMaterial3D_cgtii")
 
 [node name="WorldEnvironment" parent="." instance=ExtResource("6_ivmnp")]
 
 [node name="CrouchBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.87094, 2.85492, 10.712)
 size = Vector3(1, 1, 5)
-material = SubResource("StandardMaterial3D_rkpse")
+material = SubResource("StandardMaterial3D_vw1jw")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox2"]
@@ -525,25 +527,25 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 13.4907)
 [node name="ProtoCSGBox3D" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 20)
 size = Vector3(4, 2, 5)
-material = SubResource("StandardMaterial3D_0jbu5")
+material = SubResource("StandardMaterial3D_62fms")
 block_color = 3
 
 [node name="ProtoCSGBox3D3" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.5, 18.5)
 size = Vector3(4, 1, 2)
-material = SubResource("StandardMaterial3D_2n8js")
+material = SubResource("StandardMaterial3D_0gnwo")
 block_color = 3
 
 [node name="ProtoCSGBox3D4" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 21.5)
 size = Vector3(2, 1, 2)
-material = SubResource("StandardMaterial3D_p2h1g")
+material = SubResource("StandardMaterial3D_k67g8")
 block_color = 3
 
 [node name="ProtoCSGBox3D2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, 20)
 size = Vector3(4, 4, 5)
-material = SubResource("StandardMaterial3D_1mu5n")
+material = SubResource("StandardMaterial3D_80my6")
 block_color = 3
 
 [node name="FuncGodotMap" type="Node3D" parent="."]
@@ -895,3 +897,18 @@ shape = SubResource("ConvexPolygonShape3D_ctdci")
 
 [node name="entity_0_brush_111_collision_shape" type="CollisionShape3D" parent="FuncGodotMap/entity_0_worldspawn"]
 shape = SubResource("ConvexPolygonShape3D_8xgeg")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="JitterMon" parent="CanvasLayer" instance=ExtResource("11_p2vud")]
+offset_left = 1384.0
+offset_top = 23.0
+offset_right = 1584.0
+offset_bottom = 223.0
+
+[node name="Lissajous" parent="CanvasLayer" instance=ExtResource("12_66d5l")]
+visible = false
+offset_left = 1353.0
+offset_top = 261.0
+offset_right = 1582.0
+offset_bottom = 488.0

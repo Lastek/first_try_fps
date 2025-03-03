@@ -344,27 +344,27 @@ MarginContainer/constants/margin_left = 10
 MarginContainer/constants/margin_right = 10
 MarginContainer/constants/margin_top = 10
 
-[node name="PlayerRoot" type="Node3D"]
-
-[node name="Character" type="CharacterBody3D" parent="."]
+[node name="Character" type="CharacterBody3D"]
 script = ExtResource("1_627hw")
 
-[node name="Collision" type="CollisionShape3D" parent="Character"]
+[node name="Collision" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 shape = ExtResource("3_efww3")
 
-[node name="CrouchCeilingDetection" type="ShapeCast3D" parent="Character"]
+[node name="CrouchCeilingDetection" type="ShapeCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42473, 0)
 shape = SubResource("SphereShape3D_k4wwl")
 target_position = Vector3(0, 0, 0)
 debug_shape_custom_color = Color(0, 0.737255, 0, 1)
+
+[node name="PlayerRoot" type="Node3D" parent="."]
 
 [node name="VisualPlayer" type="Node3D" parent="."]
 
 [node name="Mesh" type="MeshInstance3D" parent="VisualPlayer"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 mesh = ExtResource("2_51nh8")
-skeleton = NodePath("../../Character")
+skeleton = NodePath("")
 
 [node name="Head" type="Node3D" parent="VisualPlayer"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
@@ -425,5 +425,6 @@ layout_mode = 2
 
 [node name="EditorModule" type="Node" parent="."]
 script = ExtResource("3_v3ckk")
+head_path = "../VisualPlayer/Head"
 
-[connection signal="animation_started" from="VisualPlayer/Head/CrouchAnimation" to="Character" method="_on_crouch_animation_animation_started"]
+[connection signal="animation_started" from="VisualPlayer/Head/CrouchAnimation" to="." method="_on_crouch_animation_animation_started"]

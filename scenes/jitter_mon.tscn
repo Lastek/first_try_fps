@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://fvhbv0w4ybf"]
+
+[ext_resource type="Script" path="res://scripts/jitter_mon.gd" id="1_s2wnj"]
+
+[node name="JitterMon" type="Panel"]
+offset_right = 200.0
+offset_bottom = 200.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+script = ExtResource("1_s2wnj")

@@ -1,6 +1,7 @@
 # Author: Lastek
 # FP controller
 # MIT License
+# Based off of Colormatic Studio's FPC v2
 # Thanks to StayAtHomeDev for his YouTube tutorials
 class_name Character extends CharacterBody3D 
 var myq := InputQueue
@@ -67,16 +68,16 @@ enum {
 }
 
 var ACTIONS: Dictionary = {
-	JUMP: "vk_jump",
-	LEFT: "vk_left",
-	RIGHT: "vk_right",
-	FORWARD: "vk_forward",
-	BACKWARD: "vk_backward",
-	PAUSE: "vk_pause",
-	CROUCH: "vk_crouch",
-	SPRINT: "vk_sprint",
-	RENDER_FPS_DECREMENT: "vk_bracket_right",
-	RENDER_FPS_INCREMENT: "vk_bracket_left"
+JUMP: "vk_jump",
+LEFT: "vk_left",
+RIGHT: "vk_right",
+FORWARD: "vk_forward",
+BACKWARD: "vk_backward",
+PAUSE: "vk_pause",
+CROUCH: "vk_crouch",
+SPRINT: "vk_sprint",
+RENDER_FPS_DECREMENT: "vk_bracket_right",
+RENDER_FPS_INCREMENT: "vk_bracket_left"
 }
 
 ## FSM
@@ -89,7 +90,7 @@ var frames = 0
 var frames_dt_accumulator = 0.0
 var dt = 1.0/Engine.physics_ticks_per_second
 var physics_time = 0.0
-var current_time = 0.0
+var render_time = 0.0
 
 
 #==============================================================================
@@ -107,9 +108,6 @@ enum PHYS_STATE {
 var physics_state: Array = []
 var previous_physics_state: Array = []
 var tracker = 0
-var global_alpha: float
-var accumulator = 0.0
-
 
 func _ready():
 	# Initialize arrays with correct size
@@ -118,13 +116,15 @@ func _ready():
 	ready_cont()
 
 	# Initialize default values
-	current_time = Time.get_ticks_usec() / 1000000.0
-	physics_time = Time.get_ticks_usec() / 1000000.0 +0.01
+	render_time = Time.get_ticks_usec() / 1000000.0
+	physics_time = Time.get_ticks_usec() / 1000000.0
 	physics_state[PHYS_STATE.POSITION] = position
 	physics_state[PHYS_STATE.VELOCITY] = velocity
 	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
 	physics_state[PHYS_STATE.TIME] = physics_time
 	previous_physics_state = physics_state.duplicate()
+
+	# ... rest of your _ready() code ...
 
 
 func ready_cont():
@@ -163,7 +163,6 @@ func init_state_machine():
 	FSM.add_child(PlayerStateWalk)
 	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
 
-
 ## Some housekeeping to make sure anims start correctly
 func initAnim():
 	AN_HEADBOB_EFFECT.play("RESET")
@@ -171,25 +170,57 @@ func initAnim():
 
 func _physics_process(delta: float) -> void:
 	previous_physics_state = physics_state.duplicate()
-	Global.debug.add_property("Phys", dt, 0)
+	Global.debug.add_property("Phys", delta, 0)
 	
 	# Handle input and physics
 	handle_input(delta)
 	integrate_physics(delta)
 	
 	# Store physics state
-	# physics_time += delta
-	physics_time = Time.get_ticks_usec() / 1_000_000.0
+	physics_time += delta
 	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
 	physics_state[PHYS_STATE.VELOCITY] = velocity
 	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation  # Head rotation from mouse input
 	physics_state[PHYS_STATE.TIME] = physics_time
-	#if accumulator >= dt:
-		#accumulator -= dt
+
 	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
 
 
+func _process(delta: float) -> void:
+	frames += 1
+	frames_dt_accumulator += delta
+	render_time += delta
+
+	# Calculate interpolation factor (alpha)
+	var alpha = (render_time - previous_physics_state[PHYS_STATE.TIME]) / (physics_state[PHYS_STATE.TIME] - previous_physics_state[PHYS_STATE.TIME])
+	alpha = clampf(alpha, 0.0, 1.0)
+	
+	# Interpolate position
+	var interpolated_pos = previous_physics_state[PHYS_STATE.POSITION] + (
+		physics_state[PHYS_STATE.POSITION] - previous_physics_state[PHYS_STATE.POSITION]
+	) * alpha
+	
+	# Interpolate head rotation
+	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
+	var curr_rot = physics_state[PHYS_STATE.ROTATION]
+	var interpolated_rot = Vector3(
+		lerpf(prev_rot.x, curr_rot.x, alpha),
+		lerpf(prev_rot.y, curr_rot.y, alpha),
+		lerpf(prev_rot.z, curr_rot.z, alpha)
+	)
+	
+	# Apply to VisualPlayer
+	PL_VISUAL.global_position = interpolated_pos
+	PL_HEAD.rotation = interpolated_rot
+	
+	update_debug_info()
+	if spin > 0:
+		for i in range(spin*10000):
+			var j = i
+
+	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
+	
 func integrate_physics(delta):
 	var accel = ACCELERATION
 	#var velocity: Vector3 = velocity
@@ -224,52 +255,6 @@ func integrate_physics(delta):
  	# velocity = stop_motion_movement(velocity, direction, speed, accel, delta)
 	move_and_slide()
 	Global.debug.add_property("speed", speed, -1)
-	
-	
-func _process(delta: float) -> void:
-	frames += 1
-	frames_dt_accumulator += delta
-	#var newTime = Time.get_ticks_usec()/ 1_000_000.0
-	#var frameTime = newTime - current_time
-	#if(frameTime > 0.25):
-		#frameTime = 0.25
-	#current_time = newTime 
-	#accumulator += frameTime
-	#Global.debug.add_property("Accumulator", accumulator, -1)
-
-	#Global.debug.add_property("frameTime", frameTime, -1)
-	# Calculate interpolation factor (alpha)
-	var alpha = Engine.get_physics_interpolation_fraction()
-	alpha = clampf(alpha, 0.0, 1.0)
-	Global.debug.add_property("PlayerAlpha", alpha, -1)
-	global_alpha = alpha
-	# Interpolate position
-	# var interpolated_pos = previous_physics_state[PHYS_STATE.POSITION] + (
-	# 	physics_state[PHYS_STATE.POSITION] - previous_physics_state[PHYS_STATE.POSITION]
-	# ) * alpha
-	var interpolated_pos = physics_state[PHYS_STATE.POSITION] * alpha \
-							+ previous_physics_state[PHYS_STATE.POSITION] \
-							*(1.0 - alpha)	
-	# Interpolate head rotation
-	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
-	var curr_rot = physics_state[PHYS_STATE.ROTATION]
-	var interpolated_rot = Vector3(
-		lerpf(prev_rot.x, curr_rot.x, alpha),
-		lerpf(prev_rot.y, curr_rot.y, alpha),
-		lerpf(prev_rot.z, curr_rot.z, alpha)
-	)
-	
-	# Apply to VisualPlayer
-	PL_VISUAL.global_position = interpolated_pos
-	PL_HEAD.rotation = interpolated_rot
-	
-	update_debug_info()
-	if spin > 0:
-		for i in range(spin*10000):
-			var j = i
-
-	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
-	
 
 
 # Move debug info to separate function:
@@ -332,6 +317,14 @@ func f_tracker(s:String)-> void:
 		tracker += 1
 		print("Tracker in %s: " %  s,tracker)
 	else: tracker +=1
+
+
+func calculate_alpha(current_time: float) -> float: 
+	var physics_delta = physics_state[PHYS_STATE.TIME] - previous_physics_state[PHYS_STATE.TIME]
+	if physics_delta <= 0:
+		return 1.0
+	var time_since_physics = current_time - previous_physics_state[PHYS_STATE.TIME]
+	return clampf(time_since_physics / physics_delta, 0.0, 1.0)
 
 
 func _unhandled_input(event):

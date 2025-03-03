@@ -14,7 +14,7 @@ extends Node
 
 @export_group("Nodes")
 @export var CHARACTER : CharacterBody3D
-@export var head_path : String = "../VisualPlayer/Head" # From this nodes parent node
+@export var head_path : String = "VisualPlayer/Head" # From this nodes parent node
 #@export var CAMERA : Camera3D
 #@export var HEADBOB_ANIMATION : AnimationPlayer
 #@export var JUMP_ANIMATION : AnimationPlayer

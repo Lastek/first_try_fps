@@ -1,4 +1,3 @@
-class_name StateWalk
 extends State
 
 var ANIMATION: AnimationPlayer
@@ -8,12 +7,12 @@ func _ready():
 	self.name = "PlayerStateWalk"
 
 func enter():
-	# ANIMATION.play("walk", -1.0, 1.0)
+	ANIMATION.play("walk", -1.0, 1.0)
 	pass
 	
 # func enter(previous_state_path: String, data := {}) -> void:
 func update(_delta):
-	# set_animation_speed(Global.player.velocity.length())
+	set_animation_speed(Global.player.velocity.length())
 	# player.animation_player.play("idle")
 	# print("Walking")
 	if Global.player.velocity.length() == 0.0:
