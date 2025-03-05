@@ -2,7 +2,7 @@
 # FP controller
 # MIT License
 # Thanks to StayAtHomeDev for his YouTube tutorials
-class_name Character extends CharacterBody3D 
+class_name Player extends CharacterBody3D 
 var myq := InputQueue
 
 var PL_HEAD: Node3D
@@ -13,12 +13,13 @@ var PL_CROUCH_CEILING_DETECTION: Node3D
 var PL_VISUAL: Node3D
 var AN_HEADBOB_EFFECT: AnimationPlayer
 var AN_JUMP_EFFECT: AnimationPlayer
-var AN_CROUCH_EFFECT: AnimationPlayer
-var AN_CROUCH_EFFECT_SPEED: float = 3.0
+#var AN_CROUCH_EFFECT: AnimationPlayer
+#var AN_CROUCH_EFFECT_SPEED: float = 3.0
 var AN_JUMP_EFFECT_AMOUNT: float = 1.0
 var AN_HEADBOB_EFFECT_AMOUNT: float = 1.0
-var AN_ENABLED: bool = true # This wont apply to crouching the way it's done rn.
-var spin:int = 0
+var AN_ENABLED: bool = true
+
+var spin: int = 0
 
 const SPEED_BASE = 6.0
 const SPRINT_SPEED_MUL = 1.75
@@ -29,7 +30,7 @@ const DECELERATION = 30.0
 
 const CROUCH_SPEED = 1.0
 
-const JUMP_VELOCITY = 3.5
+# const JUMP_VELOCITY = 3.5
 const JUMP_MUL = 1.8
 var FRICTION = .8
 
@@ -83,6 +84,7 @@ var ACTIONS: Dictionary = {
 var PlayerStateIdle: State
 var PlayerStateWalk: State
 var PlayerStateSprint: State
+var PlayerStateJump: State
 var FSM: StateMachine
 
 var frames = 0
@@ -140,7 +142,7 @@ func ready_cont():
 	PL_VISUAL = get_node("VisualPlayer")
 	AN_HEADBOB_EFFECT = get_node("VisualPlayer/Head/HeadbobAnimation")
 	AN_JUMP_EFFECT = get_node("VisualPlayer/Head/JumpAnimation")
-	AN_CROUCH_EFFECT = get_node("VisualPlayer/Head/CrouchAnimation")
+	#AN_CROUCH_EFFECT = get_node("VisualPlayer/Head/CrouchAnimation")
 	PL_CROUCH_CEILING_DETECTION.add_exception($".")
 	print("set up inputs")
 	controls_mapping_check()
@@ -151,17 +153,27 @@ func ready_cont():
 
 
 func init_state_machine():
+	print("Instantiating FSM")
+	FSM = StateMachine.new()
+	
 	PlayerStateIdle = StateIdle.new()
 	PlayerStateWalk = StateWalk.new()
 	PlayerStateSprint = StateSprint.new()
+	PlayerStateJump = StateJump.new()
+
 	## Prepare animations:
 	PlayerStateWalk.ANIMATION = AN_HEADBOB_EFFECT
 	PlayerStateSprint.ANIMATION = AN_HEADBOB_EFFECT
-	FSM = StateMachine.new()
+	PlayerStateJump.ANIMATION = AN_JUMP_EFFECT 
 
 	FSM.add_child(PlayerStateIdle)
 	FSM.add_child(PlayerStateWalk)
+	FSM.add_child(PlayerStateSprint)
+	FSM.add_child(PlayerStateJump)
+
+	print("Adding FSM as child to Player")
 	add_child(FSM) # Add FSM as child after assigning states to kick off _ready()
+	print("FSM Child Added")
 
 
 ## Some housekeeping to make sure anims start correctly
@@ -176,28 +188,25 @@ func _physics_process(delta: float) -> void:
 	# Handle input and physics
 	handle_input(delta)
 	integrate_physics(delta)
-	
-	# Store physics state
-	# physics_time += delta
-	physics_time = Time.get_ticks_usec() / 1_000_000.0
-	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
-	physics_state[PHYS_STATE.VELOCITY] = velocity
-	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation  # Head rotation from mouse input
-	physics_state[PHYS_STATE.TIME] = physics_time
-	#if accumulator >= dt:
-		#accumulator -= dt
+	physics_save_state(delta)
 	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
 
+## Call after integrate_physics
+func physics_save_state(delta:float) -> void:
+	physics_time = Time.get_ticks_usec() / 1_000_000.0
+	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
+	physics_state[PHYS_STATE.VELOCITY] = velocity			# Player velocity after applying changes
+	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation  # Head rotation from mouse input
+	physics_state[PHYS_STATE.TIME] = physics_time
+	
 
-func integrate_physics(delta):
+func integrate_physics(delta:float) -> void:
 	var accel = ACCELERATION
-	#var velocity: Vector3 = velocity
-	# var dt = delta
+
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
 		accel = ACCELERATION_AIR
-
  	# give speed in facing direction with acceleration (faking friction)
  	# how to do rampup for input vector to allow small taps. Taps vs Holding
 	if direction:
@@ -207,46 +216,36 @@ func integrate_physics(delta):
 		velocity.x = move_toward(velocity.x, 0.0, delta*DECELERATION)
 		velocity.z = move_toward(velocity.z, 0.0, delta*DECELERATION)
 
-	# var frict = FRICTION * delta
-	# var spd = velocity.length()
-	# var dv = 0
-	# if (frict < spd):
-	# 	dv = frict * -1 * (velocity / spd)
-	# else:
-	# 	dv = -velocity
-	# velocity += dv
 	if is_on_floor():
 		var spd = velocity.length()
 		if spd > 0:
 			velocity -= velocity.normalized() * min(FRICTION * delta, spd)
 
- 	# This is a curious method for movement. Might be cool mechanic
- 	# velocity = stop_motion_movement(velocity, direction, speed, accel, delta)
 	move_and_slide()
 	Global.debug.add_property("speed", speed, -1)
 	
-	
+## update player movement related values
+func update_speed(speed: float, accel: float, decel: float, frict: float=FRICTION):
+	if speed != null:
+		self.speed = speed
+	self.accel = accel
+	self.decel = decel
+	self.frict = frict
+
+func jump_impulse(jump_velocity, mul):
+	velocity.y += jump_velocity * mul
+
 func _process(delta: float) -> void:
 	frames += 1
 	frames_dt_accumulator += delta
-	#var newTime = Time.get_ticks_usec()/ 1_000_000.0
-	#var frameTime = newTime - current_time
-	#if(frameTime > 0.25):
-		#frameTime = 0.25
-	#current_time = newTime 
-	#accumulator += frameTime
-	#Global.debug.add_property("Accumulator", accumulator, -1)
 
-	#Global.debug.add_property("frameTime", frameTime, -1)
 	# Calculate interpolation factor (alpha)
 	var alpha = Engine.get_physics_interpolation_fraction()
 	alpha = clampf(alpha, 0.0, 1.0)
 	Global.debug.add_property("PlayerAlpha", alpha, -1)
 	global_alpha = alpha
+
 	# Interpolate position
-	# var interpolated_pos = previous_physics_state[PHYS_STATE.POSITION] + (
-	# 	physics_state[PHYS_STATE.POSITION] - previous_physics_state[PHYS_STATE.POSITION]
-	# ) * alpha
 	var interpolated_pos = physics_state[PHYS_STATE.POSITION] * alpha \
 							+ previous_physics_state[PHYS_STATE.POSITION] \
 							*(1.0 - alpha)	
@@ -264,13 +263,9 @@ func _process(delta: float) -> void:
 	PL_HEAD.rotation = interpolated_rot
 	
 	update_debug_info()
-	if spin > 0:
-		for i in range(spin*10000):
-			var j = i
 
 	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
 	
-
 
 # Move debug info to separate function:
 func update_debug_info() -> void:
@@ -299,14 +294,10 @@ func _input(event: InputEvent) -> void:
 	Global.debug.add_property("spin", spin, -1)
 
 
-func handle_input(delta: float) -> void:
+func handle_input(_delta: float) -> void:
 	# Get the input direction and handle the movement/deceleration.
 	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
 	Global.debug.add_property("input vector", input_dir, -1)
-	
-	# doing a basis transform and creating a normalized 3-vec
-	# direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	# Global.debug.add_property("direction vec", direction, -1)
 	
 	# Get the direction vector from mouse look
 	handle_mouse_input()
@@ -334,7 +325,7 @@ func f_tracker(s:String)-> void:
 	else: tracker +=1
 
 
-func _unhandled_input(event):
+func _unhandled_input(_event):
 	pass
 
 # Checks that actions are mapped events and that events are mapped to keys
@@ -349,4 +340,3 @@ func controls_mapping_check():
 			if v.is_empty():
 				push_error("No key mapped to the following action: ", k)
 				print("No key mapped to the following action: ", k)
-

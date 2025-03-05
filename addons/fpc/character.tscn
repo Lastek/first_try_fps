@@ -1,10 +1,10 @@
-[gd_scene load_steps=20 format=3 uid="uid://cc1m2a1obsyn4"]
+[gd_scene load_steps=17 format=3 uid="uid://cc1m2a1obsyn4"]
 
-[ext_resource type="Script" path="res://scripts/char.gd" id="1_627hw"]
+[ext_resource type="Script" uid="uid://ts0xb0nrbb2h" path="res://scripts/char.gd" id="1_627hw"]
 [ext_resource type="CapsuleMesh" uid="uid://cqnpb8mm0s3dx" path="res://meshes/player_capsule_mesh.tres" id="2_51nh8"]
 [ext_resource type="Shape3D" uid="uid://gbrwu1cyrge0" path="res://meshes/player_capsule_mesh_collision.tres" id="3_efww3"]
-[ext_resource type="Script" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
-[ext_resource type="Script" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
+[ext_resource type="Script" uid="uid://c0mm7qkgb7cjm" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
+[ext_resource type="Script" uid="uid://ct1gqcrch3uc7" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_k4wwl"]
 
@@ -91,9 +91,9 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_o0unb"]
 _data = {
-"RESET": SubResource("Animation_gh776"),
-"sprint": SubResource("Animation_8ku67"),
-"walk": SubResource("Animation_lrqmv")
+&"RESET": SubResource("Animation_gh776"),
+&"sprint": SubResource("Animation_8ku67"),
+&"walk": SubResource("Animation_lrqmv")
 }
 
 [sub_resource type="Animation" id="Animation_fvvjq"]
@@ -198,144 +198,10 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_qeg5r"]
 _data = {
-"RESET": SubResource("Animation_fvvjq"),
-"jump": SubResource("Animation_s07ye"),
-"land_left": SubResource("Animation_l1rph"),
-"land_right": SubResource("Animation_vsknp")
-}
-
-[sub_resource type="Animation" id="Animation_j8cx7"]
-resource_name = "RESET"
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../VisualPlayer/Mesh:scale")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(1, 1, 1)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../VisualPlayer/Mesh:position")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 1, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Collision:scale")
-tracks/2/interp = 2
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(1, 1, 1)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Collision:position")
-tracks/3/interp = 2
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 1, 0)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("../VisualPlayer/Head:position")
-tracks/4/interp = 2
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 1.5, 0)]
-}
-
-[sub_resource type="Animation" id="Animation_5ec5e"]
-resource_name = "crouch"
-length = 0.2
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../VisualPlayer/Mesh:scale")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(1, 1, 1), Vector3(1, 0.75, 1)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../VisualPlayer/Mesh:position")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 1, 0), Vector3(0, 0.75, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Collision:scale")
-tracks/2/interp = 2
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(1, 1, 1), Vector3(1, 0.75, 1)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Collision:position")
-tracks/3/interp = 2
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1.36604),
-"update": 0,
-"values": [Vector3(0, 1, 0), Vector3(0, 0.75, 0)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("../VisualPlayer/Head:position")
-tracks/4/interp = 2
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 1.5, 0), Vector3(0, 1.12508, 0)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_5e5t5"]
-_data = {
-"RESET": SubResource("Animation_j8cx7"),
-"crouch": SubResource("Animation_5ec5e")
+&"RESET": SubResource("Animation_fvvjq"),
+&"jump": SubResource("Animation_s07ye"),
+&"land_left": SubResource("Animation_l1rph"),
+&"land_right": SubResource("Animation_vsknp")
 }
 
 [sub_resource type="Theme" id="Theme_wdf0f"]
@@ -383,21 +249,15 @@ box_projection = true
 
 [node name="HeadbobAnimation" type="AnimationPlayer" parent="VisualPlayer/Head"]
 libraries = {
-"": SubResource("AnimationLibrary_o0unb")
+&"": SubResource("AnimationLibrary_o0unb")
 }
 blend_times = [&"RESET", &"RESET", 0.5, &"RESET", &"walk", 0.5, &"walk", &"RESET", 0.5]
 
 [node name="JumpAnimation" type="AnimationPlayer" parent="VisualPlayer/Head"]
 libraries = {
-"": SubResource("AnimationLibrary_qeg5r")
+&"": SubResource("AnimationLibrary_qeg5r")
 }
 speed_scale = 4.0
-
-[node name="CrouchAnimation" type="AnimationPlayer" parent="VisualPlayer/Head"]
-root_node = NodePath("../../../Character")
-libraries = {
-"": SubResource("AnimationLibrary_5e5t5")
-}
 
 [node name="UserInterface" type="Control" parent="."]
 layout_mode = 3
@@ -426,5 +286,3 @@ layout_mode = 2
 [node name="EditorModule" type="Node" parent="."]
 script = ExtResource("3_v3ckk")
 head_path = "../VisualPlayer/Head"
-
-[connection signal="animation_started" from="VisualPlayer/Head/CrouchAnimation" to="." method="_on_crouch_animation_animation_started"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://bltlelosbn4ky"]
 
-[ext_resource type="Script" path="res://addons/csg_toolkit/scripts/csg_repeater_3d.gd" id="1_xplbf"]
+[ext_resource type="Script" uid="uid://cb5adttqcrfwo" path="res://addons/csg_toolkit/scripts/csg_repeater_3d.gd" id="1_xplbf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k7dkv"]
 albedo_color = Color(0.122252, 0.122252, 0.122252, 1)

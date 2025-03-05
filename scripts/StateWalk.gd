@@ -1,13 +1,14 @@
-extends State
+class_name StateWalk extends VirtualPlayerState 
 
-var ANIMATION: AnimationPlayer
 var TOP_ANIM_SPEED: float = 2.2
+const SPEED = 6.0
 
 func _ready():
 	self.name = "PlayerStateWalk"
 
 func enter():
 	ANIMATION.play("walk", -1.0, 1.0)
+	Global.player.speed = Global.player.SPEED_BASE
 	pass
 	
 # func enter(previous_state_path: String, data := {}) -> void:
@@ -22,6 +23,12 @@ func set_animation_speed(speed):
 	var alpha = remap(speed, 0.0, Global.player.SPEED_BASE, 0.0, 1.0)
 	ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
 
+func _input(event):
+	if event.is_action_pressed("vk_sprint"):
+		transition.emit("PlayerStateSprint")
+	if event.is_action_pressed("vk_jump"):
+		transition.emit("PlayerStateJump")
+
 func exit():
 	print("anim_pause")
-	# ANIMATION.pause()
+	ANIMATION.pause()

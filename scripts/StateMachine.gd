@@ -2,14 +2,12 @@ class_name StateMachine extends Node
 
 @export var CURRENT_STATE: State # Reference to state in action.
 var available_states: Dictionary = {} # Holds all child states to state machine
+var player: Player
 
 ## States must be created before they are able to be read in
 ## Make sure states are instanced before the state machine.
 func _ready() -> void:
 	# Every state gets a reference to the state machine
-	print("AWAITING PLAYER.....")
-	await Global.player
-	print("Await done........")
 	var init_state = get_children()[0].name
 	for child in get_children():
 		if child is State:

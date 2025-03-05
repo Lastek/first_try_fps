@@ -1,7 +1,7 @@
 extends Panel
 
 var alpha_history: Array = []
-var max_history: int = 100
+var max_history: int = 10
 var fadeout_period: float = 2.0
 var time_since_reset: float = 0.0
 var reset_interval: float = 5.0

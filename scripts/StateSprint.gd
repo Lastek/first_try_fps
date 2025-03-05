@@ -1,22 +1,25 @@
-class_name StateSprint
+class_name StateSprint extends VirtualPlayerState 
 
-extends State
-
-var ANIMATION: AnimationPlayer
 var TOP_ANIM_SPEED: float = 2.2
 
 func _ready():
-    pass
+	self.name = "PlayerStateSprint"
 
 func enter():
-    pass
+	Global.player.speed = Global.player.SPEED_BASE * Global.player.SPRINT_SPEED_MUL
 
-func update(delta):
-    pass
+func update(_delta):
+	pass
 
 func set_animation_speed(speed):
-    var alpha = remap(speed, 0.0, Global.player.SPEED_BASE, 0.0, 1.0)
-    ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
+	var alpha = remap(speed, 0.0, Global.player.SPRINT, 0.0, 1.0)
+	ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
+
+func _input(event) -> void:
+	if event.is_action_released("vk_sprint"):
+		transition.emit("PlayerStateWalk")
+	if event.is_action_pressed("vk_jump"):
+		transition.emit("PlayerStateJump")
 
 func exit():
-    pass
+	pass

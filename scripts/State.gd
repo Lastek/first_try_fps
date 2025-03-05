@@ -1,5 +1,5 @@
-## virtual base class for all states.
-## extend this class and override its methods to implement a state.
+## interface class for all states.
+## Extend this to a virtual base class which should serve as your base for all other states.
 class_name State extends Node
 
 ## communication between state machine and states; Callback to StateMachine

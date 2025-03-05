@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bkffjngecu2xd"]
 
-[ext_resource type="Script" path="res://scripts/lissajous.gd" id="1_s7me5"]
+[ext_resource type="Script" uid="uid://0mkhilo2t11e" path="res://scripts/lissajous.gd" id="1_s7me5"]
 
 [node name="Lissajous" type="Panel"]
 offset_right = 229.0

@@ -5,12 +5,12 @@ var A: float = 50.0  # Amplitude for x
 var B: float = 50.0  # Amplitude for y
 var a: float = 3.0   # Base frequency for x (modified by input)
 var b: float = 4.0   # Frequency for y
-var delta: float = PI / 2  # Phase shift
+var dt: float = PI / 2  # Phase shift
 var speed: float = 1.0  # Speed of the parameter t
 
 # Tail effect
-var tail_length: int = 9000  # Number of points in the tail
-var fadeout_period: float = 5.0  # Seconds for points to fade out
+var tail_length: int = 200  # Number of points in the tail
+var fadeout_period: float = 3.0  # Seconds for points to fade out
 
 # Internal variables
 var t: float = 0.0
@@ -27,7 +27,7 @@ func _process(delta: float) -> void:
 	
 	# Use the input value to modify the frequency 'a'
 	var modified_a = a + input_value  # Adjust this based on your input's range
-	var x = A * sin(modified_a * t + delta)
+	var x = A * sin(modified_a * t + dt)
 	var y = B * sin(b * t)
 	
 	# Center the curve in the panel
