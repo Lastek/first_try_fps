@@ -5,6 +5,8 @@ class_name State extends Node
 ## communication between state machine and states; Callback to StateMachine
 signal transition(new_state_name: String)
 
+func _ready():
+	pass
 ## entry into state; Called by StateMachine
 func enter() -> void:
 	pass

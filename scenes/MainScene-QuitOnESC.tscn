@@ -453,7 +453,6 @@ points = PackedVector3Array(18, 0.75, -38, 18, 0.75, -34, 14.3661, -2, -34, 14.3
 points = PackedVector3Array(24, 0.75, -38, 24, 0.75, -34, 18, 0.75, -34, 18, 0.75, -38, 24, 0.5, -38, 24, 0.5, -34, 18, 0.5, -34, 18, 0.5, -38)
 
 [node name="MainTestScene" type="Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.476631, -0.485744, -1.10813)
 script = ExtResource("1_xqpsn")
 
 [node name="Floor" type="CSGBox3D" parent="."]

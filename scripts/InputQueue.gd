@@ -15,7 +15,7 @@ const STATE_READY = 0
 const STATE_FULL = 1
 const STATE_EMPTY = 2
 
-var buffer: Array[InputEvent] = []
+var buffer: Array[InputEvent]
 var slot: int = 0;
 
 var state: int = 0

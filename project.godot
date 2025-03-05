@@ -111,8 +111,9 @@ vk_bracket_left={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=30
+common/physics_ticks_per_second=250
 common/physics_jitter_fix=0.0
+3d/default_gravity=10.0
 
 [rendering]
 

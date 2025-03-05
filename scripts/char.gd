@@ -3,7 +3,6 @@
 # MIT License
 # Thanks to StayAtHomeDev for his YouTube tutorials
 class_name Player extends CharacterBody3D 
-var myq := InputQueue
 
 var PL_HEAD: Node3D
 var PL_CAMERA: Camera3D
@@ -19,33 +18,43 @@ var AN_JUMP_EFFECT_AMOUNT: float = 1.0
 var AN_HEADBOB_EFFECT_AMOUNT: float = 1.0
 var AN_ENABLED: bool = true
 
-var spin: int = 0
-
-const SPEED_BASE = 6.0
-const SPRINT_SPEED_MUL = 1.75
-
-const ACCELERATION = 40
-const ACCELERATION_AIR = .055555
-const DECELERATION = 30.0
-
-const CROUCH_SPEED = 1.0
-
-# const JUMP_VELOCITY = 3.5
-const JUMP_MUL = 1.8
-var FRICTION = .8
 
 const MOUSE_SENSITIVITY = 0.1
 
-var speed = SPEED_BASE
+const WALK_SPEED = 6.0
+const SPRINT_SPEED_MUL = 1.75
+const ACCELERATION = 40
+const AIR_ACCELERATION = 1.4
+const DECELERATION = 30.0
+const AIR_DECELERATION= 0.2
+const CROUCH_SPEED = 1.0
+const JUMP_VELOCITY = 3.5
+const JUMP_MUL = 1.8
+const GROUND_FRICTION = 0.8
+
+enum MovementValues {
+	SPEED,
+	ACCELERATION,
+	DECELERATION,
+	GROUND_FRICTION,
+	AIR_ACCELERATION,
+	AIR_DECELERATION,
+	JUMP_VELOCITY,
+	JUMP_MUL,
+	CROUCH_SPEED,
+	SIZE
+}
+
+var movement_values:Array
 
 var input_dir: Vector2
 var input_dir_prev: Vector2
 var direction: Vector3
-var crouched: bool = false
-var crouch_mode: bool = false
+# var crouched: bool = false
+# var crouch_mode: bool = false
 
-var low_ceiling: bool = false
-var was_on_floor: bool = false
+# var low_ceiling: bool = false
+# var was_on_floor: bool = false
 var dir_lerp: Vector2 = Vector2(0.0, 0.0)
 var f_transform: Vector3 = Vector3(0.0, 0.0, 0.0)
 # Get the gravity from the project settings to be synced with RigidBody nodes.
@@ -93,10 +102,6 @@ var dt = 1.0/Engine.physics_ticks_per_second
 var physics_time = 0.0
 var current_time = 0.0
 
-
-#==============================================================================
-#==============================================================================
-
 enum PHYS_STATE {
 	POSITION,
 	VELOCITY,
@@ -109,6 +114,7 @@ enum PHYS_STATE {
 var physics_state: Array = []
 var previous_physics_state: Array = []
 var tracker = 0
+var spin: int = 0
 var global_alpha: float
 var accumulator = 0.0
 
@@ -148,13 +154,14 @@ func ready_cont():
 	controls_mapping_check()
 	init_state_machine()
 	initAnim()
+	init_player_movement()
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # This has been relocated to the main scene script
 	print("End Player _ready()")
 
 
 func init_state_machine():
 	print("Instantiating FSM")
-	FSM = StateMachine.new()
+	FSM = StateMachine.new(self)
 	
 	PlayerStateIdle = StateIdle.new()
 	PlayerStateWalk = StateWalk.new()
@@ -180,20 +187,30 @@ func init_state_machine():
 func initAnim():
 	AN_HEADBOB_EFFECT.play("RESET")
 
+func init_player_movement():
+	movement_values.resize(MovementValues.SIZE)
+	movement_values[MovementValues.SPEED] = WALK_SPEED
+	movement_values[MovementValues.ACCELERATION] = ACCELERATION
+	movement_values[MovementValues.DECELERATION] = DECELERATION
+	movement_values[MovementValues.GROUND_FRICTION] = GROUND_FRICTION
+	movement_values[MovementValues.AIR_ACCELERATION] = AIR_ACCELERATION 
+	movement_values[MovementValues.AIR_DECELERATION] = AIR_DECELERATION 
+	movement_values[MovementValues.JUMP_VELOCITY] = JUMP_VELOCITY
+	movement_values[MovementValues.JUMP_MUL] = JUMP_MUL
+	movement_values[MovementValues.CROUCH_SPEED] = CROUCH_SPEED
 
 func _physics_process(delta: float) -> void:
 	previous_physics_state = physics_state.duplicate()
-	Global.debug.add_property("Phys", dt, 0)
-	
 	# Handle input and physics
 	handle_input(delta)
 	integrate_physics(delta)
 	physics_save_state(delta)
+	Global.debug.add_property("Phys", dt, 0)
 	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
 
 ## Call after integrate_physics
-func physics_save_state(delta:float) -> void:
+func physics_save_state(_delta:float) -> void:
 	physics_time = Time.get_ticks_usec() / 1_000_000.0
 	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
 	physics_state[PHYS_STATE.VELOCITY] = velocity			# Player velocity after applying changes
@@ -202,38 +219,37 @@ func physics_save_state(delta:float) -> void:
 	
 
 func integrate_physics(delta:float) -> void:
-	var accel = ACCELERATION
+	# Get physics values from current state
+	var speed = movement_values[MovementValues.SPEED]
+	var accel = movement_values[MovementValues.ACCELERATION]
+	var decel = movement_values[MovementValues.DECELERATION]
+	var frict = movement_values[MovementValues.GROUND_FRICTION]
+	var air_accel = movement_values[MovementValues.AIR_ACCELERATION]
+	var air_decel = movement_values[MovementValues.AIR_DECELERATION]
 
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
-		accel = ACCELERATION_AIR
+		accel = air_accel
  	# give speed in facing direction with acceleration (faking friction)
  	# how to do rampup for input vector to allow small taps. Taps vs Holding
 	if direction:
 		velocity.z = velocity.z+(direction.z*speed - velocity.z)*delta*accel
 		velocity.x = velocity.x+(direction.x*speed - velocity.x)*delta*accel
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, delta*DECELERATION)
-		velocity.z = move_toward(velocity.z, 0.0, delta*DECELERATION)
+		velocity.x = move_toward(velocity.x, 0.0, delta*decel)
+		velocity.z = move_toward(velocity.z, 0.0, delta*decel)
 
 	if is_on_floor():
 		var spd = velocity.length()
 		if spd > 0:
-			velocity -= velocity.normalized() * min(FRICTION * delta, spd)
+			velocity -= velocity.normalized() * min(frict * delta, spd)
 
 	move_and_slide()
 	Global.debug.add_property("speed", speed, -1)
 	
-## update player movement related values
-func update_speed(speed: float, accel: float, decel: float, frict: float=FRICTION):
-	if speed != null:
-		self.speed = speed
-	self.accel = accel
-	self.decel = decel
-	self.frict = frict
-
-func jump_impulse(jump_velocity, mul):
-	velocity.y += jump_velocity * mul
+func jump_impulse():
+	velocity.y += movement_values[MovementValues.JUMP_VELOCITY] \
+					* movement_values[MovementValues.JUMP_MUL]
 
 func _process(delta: float) -> void:
 	frames += 1

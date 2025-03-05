@@ -7,7 +7,7 @@ func _input(event):
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	elif what == NOTIFICATION_WM_WINDOW_FOCUS_IN or what == NOTIFICATION_WM_MOUSE_ENTER:
+	elif what == NOTIFICATION_WM_MOUSE_ENTER:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	print("MouseMode: ", Input.mouse_mode)
 		

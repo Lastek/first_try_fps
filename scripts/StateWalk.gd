@@ -2,28 +2,35 @@ class_name StateWalk extends VirtualPlayerState
 
 var TOP_ANIM_SPEED: float = 2.2
 const SPEED = 6.0
+const ACCELLERATION = 40
+const DECELERATION = 30.0
 
 func _ready():
+	super._ready()
 	self.name = "PlayerStateWalk"
 
 func enter():
+	super.enter() # Call parent enter to ensure physics_values is initialized
 	ANIMATION.play("walk", -1.0, 1.0)
-	Global.player.speed = Global.player.SPEED_BASE
+	# Set walk-specific physics values
+	PLAYER.movement_values[PLAYER.MovementValues.SPEED] = SPEED
+	PLAYER.movement_values[PLAYER.MovementValues.ACCELERATION] = ACCELLERATION
+	PLAYER.movement_values[PLAYER.MovementValues.DECELERATION] = DECELERATION 
 	pass
 	
 # func enter(previous_state_path: String, data := {}) -> void:
 func update(_delta):
-	set_animation_speed(Global.player.velocity.length())
+	set_animation_speed(player_get_vector_length())
 	# player.animation_player.play("idle")
 	# print("Walking")
-	if Global.player.velocity.length() == 0.0:
+	if player_get_vector_length() == 0.0:
 		transition.emit("PlayerStateIdle")
 
 func set_animation_speed(speed):
-	var alpha = remap(speed, 0.0, Global.player.SPEED_BASE, 0.0, 1.0)
+	var alpha = remap(speed, 0.0, PLAYER.movement_values[PLAYER.MovementValues.SPEED], 0.0, 1.0)
 	ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
 
-func _input(event):
+func update_input(event):
 	if event.is_action_pressed("vk_sprint"):
 		transition.emit("PlayerStateSprint")
 	if event.is_action_pressed("vk_jump"):
