@@ -50,8 +50,6 @@ var movement_values:Array
 var input_dir: Vector2
 var input_dir_prev: Vector2
 var direction: Vector3
-# var crouched: bool = false
-# var crouch_mode: bool = false
 
 # var low_ceiling: bool = false
 # var was_on_floor: bool = false
@@ -116,11 +114,24 @@ var previous_physics_state: Array = []
 var tracker = 0
 var spin: int = 0
 var global_alpha: float
+var max_alpha: float = 0
 var accumulator = 0.0
+@onready var jittermon
+
+func init_jittermon():
+	jittermon = get_tree().get_root().get_node("MainTestScene/CanvasLayer/JitterMon")
+	jittermon.y_min = 0.0
+	jittermon.y_max = 400
+	jittermon.threshold_low = 100 # Below 30 FPS is GREEN (indicating a warning if low is bad)
+	jittermon.threshold_high = 240  # Above 60 FPS is RED (or adjust logic if desired)
+	jittermon.value_provider = func(delta): return 1.0 / delta
+	jittermon.thresh_invert = true	
 
 
 func _ready():
 	# Initialize arrays with correct size
+	call_deferred("init_jittermon")
+
 	physics_state.resize(PHYS_STATE.SIZE)
 	previous_physics_state.resize(PHYS_STATE.SIZE)
 	ready_cont()
@@ -153,7 +164,7 @@ func ready_cont():
 	print("set up inputs")
 	controls_mapping_check()
 	init_state_machine()
-	initAnim()
+	init_anim()
 	init_player_movement()
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # This has been relocated to the main scene script
 	print("End Player _ready()")
@@ -184,7 +195,7 @@ func init_state_machine():
 
 
 ## Some housekeeping to make sure anims start correctly
-func initAnim():
+func init_anim():
 	AN_HEADBOB_EFFECT.play("RESET")
 
 func init_player_movement():
@@ -205,6 +216,7 @@ func _physics_process(delta: float) -> void:
 	handle_input(delta)
 	integrate_physics(delta)
 	physics_save_state(delta)
+	
 	Global.debug.add_property("Phys", dt, 0)
 	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
@@ -226,15 +238,18 @@ func integrate_physics(delta:float) -> void:
 	var frict = movement_values[MovementValues.GROUND_FRICTION]
 	var air_accel = movement_values[MovementValues.AIR_ACCELERATION]
 	var air_decel = movement_values[MovementValues.AIR_DECELERATION]
-
+	
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
 		accel = air_accel
+		decel = air_decel
  	# give speed in facing direction with acceleration (faking friction)
  	# how to do rampup for input vector to allow small taps. Taps vs Holding
 	if direction:
-		velocity.z = velocity.z+(direction.z*speed - velocity.z)*delta*accel
-		velocity.x = velocity.x+(direction.x*speed - velocity.x)*delta*accel
+		# velocity.z = velocity.z+(direction.z*speed - velocity.z)*delta*accel
+		# velocity.x = velocity.x+(direction.x*speed - velocity.x)*delta*accel
+		velocity.x = move_toward(velocity.x, direction.x*speed, delta*accel)
+		velocity.z = move_toward(velocity.z, direction.z*speed, delta*accel)
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, delta*decel)
 		velocity.z = move_toward(velocity.z, 0.0, delta*decel)
@@ -258,13 +273,15 @@ func _process(delta: float) -> void:
 	# Calculate interpolation factor (alpha)
 	var alpha = Engine.get_physics_interpolation_fraction()
 	alpha = clampf(alpha, 0.0, 1.0)
-	Global.debug.add_property("PlayerAlpha", alpha, -1)
 	global_alpha = alpha
 
 	# Interpolate position
 	var interpolated_pos = physics_state[PHYS_STATE.POSITION] * alpha \
 							+ previous_physics_state[PHYS_STATE.POSITION] \
 							*(1.0 - alpha)	
+	var basis = transform.basis
+	Global.debug.add_property("Transform", transform, 10)
+	Global.debug.add_property("Basis", basis, 11)
 	# Interpolate head rotation
 	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
 	var curr_rot = physics_state[PHYS_STATE.ROTATION]
@@ -285,15 +302,18 @@ func _process(delta: float) -> void:
 
 # Move debug info to separate function:
 func update_debug_info() -> void:
-	if frames >= 40:
+	if frames >= 250:
 		Global.debug.add_property("FPS", frames/frames_dt_accumulator, 0)
 		frames_dt_accumulator = 0
 		frames = 0
-
+	if global_alpha>max_alpha:
+		max_alpha = global_alpha
+		
 	Global.debug.add_property("input vector", input_dir, -1)
 	Global.debug.add_property("direction vec", direction, -1)
 	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
 	Global.debug.add_property("Velocity", velocity, -1)
+	Global.debug.add_property("Max Alpha", max_alpha, -1)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:

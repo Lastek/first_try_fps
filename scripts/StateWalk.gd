@@ -2,8 +2,8 @@ class_name StateWalk extends VirtualPlayerState
 
 var TOP_ANIM_SPEED: float = 2.2
 const SPEED = 6.0
-const ACCELLERATION = 40
-const DECELERATION = 30.0
+const ACCELLERATION = 50
+const DECELERATION = 20.0
 
 func _ready():
 	super._ready()

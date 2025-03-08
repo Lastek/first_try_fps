@@ -3,7 +3,7 @@ class_name StateJump extends VirtualPlayerState
 var TOP_ANIM_SPEED: float = 2.2
 const JUMP_VELOCITY = PLAYER.JUMP_VELOCITY
 const JUMP_MUL = PLAYER.JUMP_MUL
-const ACCEL_AIR = PLAYER.AIR_ACCELERATION
+const ACCEL_AIR = 20
 const DECEL_AIR = PLAYER.AIR_DECELERATION
 
 func _ready():
@@ -17,6 +17,8 @@ func enter():
 	# Apply upward impulse
 	PLAYER.movement_values[PLAYER.MovementValues.JUMP_VELOCITY] = JUMP_VELOCITY
 	PLAYER.movement_values[PLAYER.MovementValues.JUMP_MUL] = JUMP_MUL
+	PLAYER.movement_values[PLAYER.MovementValues.AIR_DECELERATION] = DECEL_AIR
+	PLAYER.movement_values[PLAYER.MovementValues.AIR_ACCELERATION] = ACCEL_AIR 
 	PLAYER.jump_impulse()
 
 
