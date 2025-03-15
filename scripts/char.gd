@@ -55,6 +55,7 @@ var direction: Vector3
 # var was_on_floor: bool = false
 var dir_lerp: Vector2 = Vector2(0.0, 0.0)
 var f_transform: Vector3 = Vector3(0.0, 0.0, 0.0)
+var head_rot:Vector2 = Vector2()
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var GRAVITY = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -226,7 +227,7 @@ func physics_save_state(_delta:float) -> void:
 	physics_time = Time.get_ticks_usec() / 1_000_000.0
 	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
 	physics_state[PHYS_STATE.VELOCITY] = velocity			# Player velocity after applying changes
-	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation  # Head rotation from mouse input
+	physics_state[PHYS_STATE.ROTATION] = head_rot  # Head rotation from mouse input
 	physics_state[PHYS_STATE.TIME] = physics_time
 	
 
@@ -279,26 +280,29 @@ func _process(delta: float) -> void:
 	var interpolated_pos = physics_state[PHYS_STATE.POSITION] * alpha \
 							+ previous_physics_state[PHYS_STATE.POSITION] \
 							*(1.0 - alpha)	
-	var basis = transform.basis
-	Global.debug.add_property("Transform", transform, 10)
-	Global.debug.add_property("Basis", basis, 11)
+	# var basis = transform.basis
+	# Global.debug.add_property("Transform", transform, 10)
+	# Global.debug.add_property("Basis", basis, 11)
 	# Interpolate head rotation
 	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
 	var curr_rot = physics_state[PHYS_STATE.ROTATION]
 	var interpolated_rot = Vector3(
 		lerpf(prev_rot.x, curr_rot.x, alpha),
-		lerpf(prev_rot.y, curr_rot.y, alpha),
-		lerpf(prev_rot.z, curr_rot.z, alpha)
+		lerpf(prev_rot.y, curr_rot.y , alpha),
+		lerpf(0, 0, alpha)
 	)
 	
 	# Apply to VisualPlayer
-	PL_VISUAL.global_position = interpolated_pos
+	 #PL_VISUAL.position = interpolated_pos
 	PL_HEAD.rotation = interpolated_rot
+	# PL_MESH.rotation = interpolated_rot
 	
 	update_debug_info()
 
 	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
 	
+func update_mesh_rotation(angle, delta:float)->void:
+	PL_MESH.rotate(Vector3(0,1,0), angle)
 
 # Move debug info to separate function:
 func update_debug_info() -> void:
@@ -317,8 +321,8 @@ func update_debug_info() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		mouseInput.x += event.relative.x * MOUSE_SENSITIVITY
-		mouseInput.y += event.relative.y * MOUSE_SENSITIVITY
+		mouseInput.x -= event.relative.x * MOUSE_SENSITIVITY
+		mouseInput.y -= event.relative.y * MOUSE_SENSITIVITY
 	if event and event != InputEventMouseMotion:
 		pass
 	if event.is_action_pressed(ACTIONS[RENDER_FPS_INCREMENT]):
@@ -337,9 +341,10 @@ func handle_input(_delta: float) -> void:
 	
 	# Get the direction vector from mouse look
 	handle_mouse_input()
-	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y)
+	
+	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y) # Possible cumulative error
 	direction = Vector3(vec2.x, 0, vec2.y)
-
+	#Global.debug.add_property("PL_HEAD_ROTD",0, -1)
 	Global.debug.add_property("input rotated vec", direction, -1)
 	Global.debug.add_property("rotated vec3", direction, -1)
 	Global.debug.add_property("Velocity", velocity, -1)
@@ -347,11 +352,11 @@ func handle_input(_delta: float) -> void:
 
 # Move mouse handling to separate function:
 func handle_mouse_input() -> void:
-	PL_HEAD.rotation_degrees.x -= mouseInput.y
-	PL_HEAD.rotation_degrees.y -= mouseInput.x
-	PL_HEAD.rotation.x = clamp(PL_HEAD.rotation.x, deg_to_rad(-90), deg_to_rad(90))
+	head_rot += Vector2(mouseInput.x, mouseInput.y)
+	
 	mouseInput = Vector2.ZERO
-
+	
+	
 
 ## Just to see what starts first and when things execute
 func f_tracker(s:String)-> void:
