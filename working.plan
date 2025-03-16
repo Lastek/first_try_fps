@@ -1,0 +1,71 @@
+3/15/2025
+- Reworking camera rotation. I want to get mouse input and then map it
+to rotations every physics frame. It's prolly best to immediately calculate this
+rotation after getting the physical input. This will allow a call to grab the input
+without worrying about repeating calculations in physics integrations and 
+rendering interpolation.
+
+I am targeting a high physics tick rate (right now 250 hz but possibly half that)
+because the goal is to have a smooth movement system. I have a feeling that
+I may have to have multiple different tick rates. One for the player (high rate)
+and halved for entities. I'm fine with doing multiple interpolations because
+using multiples will avoid some difficult computations.
+
+Input is a tough thing to get right because it is needed for physics and rendering.
+With interpolation, physics is always one step ahead of rendering so we must
+interpolate rendering states.
+This is why I've stored two physics frames in arrays and use them for rendering interpolation.
+This works fine because we assign everything to the player nodes in the physics step
+and store the copy. Then, when we do the rendering to screen we just check the
+arrays for the data and use that to interpolate the position and rotation of
+the player.
+
+Interpolation
+
+Render > 250hz
+    frames    0     1     2     3     4     5     6     7     8     9    10
+    Physics:  |     |     |     |     |     |     |     |     |     |     |   
+    Render :  |   |    |   |    |     |   |   |  |   |   |
+    frames    1   2    3   4    5     6   7   8  9   10  11
+            
+        This works because we always have a physics frame inbetween render frames.
+        The physics is one steo ahead so for any rendering we just use an 
+        alpha value to interpolate between physics frames and 
+        put that on the screen. 
+        If we have to do two or more interpolations
+        it might feel a bit weird if the player is looking around.
+        It's because we're doing linear interpolation. 
+        The player is moving their mouse very non-linearly! 
+        We don't want to do extra calculations for some sort of integrations 
+        in rendering or derrivatives in physics. 
+        So, it's probably best to interpolate coordinates but do an extra input
+        check when rendering the state to get fresh player view angles.
+        Also, if the physics is ahead, the update will reduce
+        the feel of delayed mouse input, but it will create a feeling of
+        being dragged when moving since the player position will be based off
+        which direction the player was facing in. 
+
+        If the render rate is lower than physics?
+
+Render < 250hz
+    frames    0     1     2     3     4     5     6     7     8     9    10
+    Physics:  |     |     |     |     |     |     |     |     |     |     |   
+    Render :  |      |      |      |      |      |      |      |      |      
+    frames    1      2      3      4      5      6      7      8      9
+          
+        
+        Ok this works too. We always have a frame and we're interpolating once.
+        Though, the frame rate might be higher some of the time.
+        Checking inputs during the render step is still a good idea. In this
+        case the physics may be updated multiple times per rendered frame
+        so we have fresh inputs.
+        So why is it a good idea? In this case it's the same as before. We can't
+        guarantee that the physics will run faster. 
+
+This may be the same for button inputs as well, though interpolating presses
+complicate the process of interaction with the world. This will require
+some experimentation once I nail down the correct way to update player view
+rotation.
+
+So, with all that said, the primary thing I need to work out is how to
+store and interpolate rotations and then I can test the feel of player inputs.
