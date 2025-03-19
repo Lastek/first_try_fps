@@ -289,11 +289,9 @@ func _process(delta: float) -> void:
 	# Interpolate head rotation
 	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
 	var curr_rot = physics_state[PHYS_STATE.ROTATION]
-	var interpolated_rot = Vector2(
-		lerpf(prev_rot.x, curr_rot.x, alpha),
-		lerpf(prev_rot.y, curr_rot.y , alpha),
-	)
-	
+	#PL_VISUAL.prev_rot.slerp(curr_rot, alpha)
+	head_rotation()
+	rotVel = head_rot
 	var off = 1.5
 	
 	DebugDraw3D.draw_arrow(lerp_pos.origin+(Vector3(0,off,0)), Vector3(0,off,0)+(lerp_pos*Vector3(0,0,-1)), Color.PURPLE, .1, true)
