@@ -11,7 +11,7 @@ func _ready():
 
 func enter():
 	super.enter() # Call parent enter to ensure physics_values is initialized
-	ANIMATION.play("walk", -1.0, 1.0)
+	#ANIMATION.play("walk", -1.0, 1.0)
 	# Set walk-specific physics values
 	PLAYER.movement_values[PLAYER.MovementValues.SPEED] = SPEED
 	PLAYER.movement_values[PLAYER.MovementValues.ACCELERATION] = ACCELLERATION
@@ -20,7 +20,7 @@ func enter():
 	
 # func enter(previous_state_path: String, data := {}) -> void:
 func update(_delta):
-	set_animation_speed(player_get_vector_length())
+	# set_animation_speed(player_get_vector_length())
 	# player.animation_player.play("idle")
 	# print("Walking")
 	if player_get_vector_length() == 0.0:
@@ -38,4 +38,4 @@ func update_input(event):
 
 func exit():
 	print("anim_pause")
-	ANIMATION.pause()
+	# ANIMATION.pause()

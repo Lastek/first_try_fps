@@ -50,6 +50,7 @@ var movement_values:Array
 var input_dir: Vector2
 var input_dir_prev: Vector2
 var direction: Vector3
+var rotVel: Vector2
 
 # var low_ceiling: bool = false
 # var was_on_floor: bool = false
@@ -121,6 +122,7 @@ var accumulator = 0.0
 
 func init_jittermon():
 	jittermon = get_tree().get_root().get_node("MainTestScene/CanvasLayer/JitterMon")
+	if jittermon == null: return
 	jittermon.y_min = 0.0
 	jittermon.y_max = 400
 	jittermon.threshold_low = 100 # Below 30 FPS is GREEN (indicating a warning if low is bad)
@@ -162,6 +164,7 @@ func ready_cont():
 	AN_JUMP_EFFECT = get_node("VisualPlayer/Head/JumpAnimation")
 	#AN_CROUCH_EFFECT = get_node("VisualPlayer/Head/CrouchAnimation")
 	PL_CROUCH_CEILING_DETECTION.add_exception($".")
+	print("PL_VISUAL: ", PL_VISUAL)
 	print("set up inputs")
 	controls_mapping_check()
 	init_state_machine()
@@ -214,7 +217,7 @@ func init_player_movement():
 func _physics_process(delta: float) -> void:
 	previous_physics_state = physics_state.duplicate()
 	# Handle input and physics
-	handle_input(delta)
+	input_to_vec(delta)
 	integrate_physics(delta)
 	physics_save_state(delta)
 	
@@ -225,7 +228,7 @@ func _physics_process(delta: float) -> void:
 ## Call after integrate_physics
 func physics_save_state(_delta:float) -> void:
 	physics_time = Time.get_ticks_usec() / 1_000_000.0
-	physics_state[PHYS_STATE.POSITION] = global_position  # Use global_position for consistency
+	physics_state[PHYS_STATE.POSITION] = global_transform  # Use global_position for consistency
 	physics_state[PHYS_STATE.VELOCITY] = velocity			# Player velocity after applying changes
 	physics_state[PHYS_STATE.ROTATION] = head_rot  # Head rotation from mouse input
 	physics_state[PHYS_STATE.TIME] = physics_time
@@ -270,35 +273,42 @@ func jump_impulse():
 func _process(delta: float) -> void:
 	frames += 1
 	frames_dt_accumulator += delta
-
+	
 	# Calculate interpolation factor (alpha)
 	var alpha = Engine.get_physics_interpolation_fraction()
 	alpha = clampf(alpha, 0.0, 1.0)
 	global_alpha = alpha
-
+	var prev_ps = previous_physics_state[PHYS_STATE.POSITION]
+	var cur_ps = physics_state[PHYS_STATE.POSITION]
 	# Interpolate position
-	var interpolated_pos = physics_state[PHYS_STATE.POSITION] * alpha \
-							+ previous_physics_state[PHYS_STATE.POSITION] \
-							*(1.0 - alpha)	
-	# var basis = transform.basis
-	# Global.debug.add_property("Transform", transform, 10)
-	# Global.debug.add_property("Basis", basis, 11)
+	#var interpolated_pos:Transform3D = previous_physics_state[PHYS_STATE.POSITION] * alpha \
+							#+ physics_state[PHYS_STATE.POSITION] \
+							#*(1.0 - alpha)	
+	var lerp_pos:Transform3D = prev_ps.interpolate_with(cur_ps, alpha)
+		#var interpolated_pos:Vector3 = lerp(previous_physics_state[PHYS_STATE.POSITION], physics_state[PHYS_STATE.POSITION], alpha)
 	# Interpolate head rotation
 	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
 	var curr_rot = physics_state[PHYS_STATE.ROTATION]
-	var interpolated_rot = Vector3(
+	var interpolated_rot = Vector2(
 		lerpf(prev_rot.x, curr_rot.x, alpha),
 		lerpf(prev_rot.y, curr_rot.y , alpha),
-		lerpf(0, 0, alpha)
 	)
 	
+	var off = 1.5
+	
+	DebugDraw3D.draw_arrow(lerp_pos.origin+(Vector3(0,off,0)), Vector3(0,off,0)+(lerp_pos*Vector3(0,0,-1)), Color.PURPLE, .1, true)
+	
+	## Interpolate player camera position
+	PL_VISUAL.global_transform.origin  = lerp_pos.origin
+	
+	#DebugDraw3D.draw_arrow(global_position+(Vector3(0,off,0)), Vector3(0,off,0)+(global_position*Vector3(0,0,-1)), Color.PURPLE, .1, true)
+	#DebugDraw3D.draw_arrow(interpolated_pos+(Vector3(0,off,0)), Vector3(0,off,0)+(interpolated_pos*Vector3(-1,0,1)), Color.PURPLE, .1, true)
 	# Apply to VisualPlayer
 	 #PL_VISUAL.position = interpolated_pos
-	PL_HEAD.rotation = interpolated_rot
 	# PL_MESH.rotation = interpolated_rot
 	
 	update_debug_info()
-
+	#PL_CAMERA.global_position = interpolated_pos
 	Global.debug.add_property("Render Position", PL_VISUAL.global_position, 3)
 	
 func update_mesh_rotation(angle, delta:float)->void:
@@ -317,12 +327,14 @@ func update_debug_info() -> void:
 	Global.debug.add_property("direction vec", direction, -1)
 	Global.debug.add_property("PL_HEAD", PL_HEAD.rotation, -1)
 	Global.debug.add_property("Velocity", velocity, -1)
-	Global.debug.add_property("Max Alpha", max_alpha, -1)
+	Global.debug.add_property("Alpha", global_alpha, -1)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		mouseInput.x -= event.relative.x * MOUSE_SENSITIVITY
-		mouseInput.y -= event.relative.y * MOUSE_SENSITIVITY
+		mouseInput.x -= event.relative.y * MOUSE_SENSITIVITY
+		mouseInput.y -= event.relative.x * MOUSE_SENSITIVITY
+		head_rot += mouseInput
+		mouseInput = Vector2.ZERO
 	if event and event != InputEventMouseMotion:
 		pass
 	if event.is_action_pressed(ACTIONS[RENDER_FPS_INCREMENT]):
@@ -333,30 +345,28 @@ func _input(event: InputEvent) -> void:
 
 	Global.debug.add_property("spin", spin, -1)
 
-
-func handle_input(_delta: float) -> void:
+## Will handle mouse input and generate a Vector3 `direction` based on movement actions
+func input_to_vec(_delta: float) -> void:
 	# Get the input direction and handle the movement/deceleration.
 	input_dir = Input.get_vector(ACTIONS[LEFT], ACTIONS[RIGHT], ACTIONS[FORWARD], ACTIONS[BACKWARD])
 	Global.debug.add_property("input vector", input_dir, -1)
 	
-	# Get the direction vector from mouse look
-	handle_mouse_input()
-	
-	var vec2: Vector2 = input_dir.rotated(-PL_HEAD.rotation.y) # Possible cumulative error
+	head_rotation()
+	rotVel = head_rot
+
+	Global.debug.add_property("Rotation Degrees", rotVel,-1)
+	Global.debug.add_property("Rot Q", PL_HEAD.quaternion ,-1)
+	var vec2: Vector2 = input_dir.rotated(deg_to_rad(-PL_HEAD.rotation_degrees.y))
 	direction = Vector3(vec2.x, 0, vec2.y)
 	#Global.debug.add_property("PL_HEAD_ROTD",0, -1)
 	Global.debug.add_property("input rotated vec", direction, -1)
-	Global.debug.add_property("rotated vec3", direction, -1)
-	Global.debug.add_property("Velocity", velocity, -1)
-	
 
-# Move mouse handling to separate function:
-func handle_mouse_input() -> void:
-	head_rot += Vector2(mouseInput.x, mouseInput.y)
-	
-	mouseInput = Vector2.ZERO
-	
-	
+## Rotate head in degrees. Clamp pitch [-90, 90]
+func head_rotation():
+	head_rot.x = clamp(head_rot.x, -90, 90)
+	PL_HEAD.rotation_degrees.x = head_rot.x
+	PL_HEAD.rotation_degrees.y = head_rot.y 
+
 
 ## Just to see what starts first and when things execute
 func f_tracker(s:String)-> void:

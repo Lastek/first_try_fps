@@ -15,7 +15,7 @@ func update(_delta):
 
 func set_animation_speed(speed):
 	var alpha = remap(speed, 0.0, PLAYER.movement_values[PLAYER.MovementValues.SPEED], 0.0, 1.0)
-	ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
+	#ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
 
 func update_input(event) -> void:
 	if event.is_action_released("vk_sprint"):

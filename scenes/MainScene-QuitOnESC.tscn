@@ -1,4 +1,4 @@
-[gd_scene load_steps=140 format=4 uid="uid://dktlakt1nm6u1"]
+[gd_scene load_steps=141 format=4 uid="uid://dktlakt1nm6u1"]
 
 [ext_resource type="Script" uid="uid://c4ghh0m01vfw2" path="res://scenes/MainTestScene.gd" id="1_xqpsn"]
 [ext_resource type="Texture2D" uid="uid://dl567gulrbij6" path="res://addons/proto-csgs/textures/light/texture_09.png" id="2_48v0d"]
@@ -49,28 +49,35 @@ uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qmtj1"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("5_yjg44")
+metallic = 0.64
+roughness = 0.47
+subsurf_scatter_strength = 0.5
+subsurf_scatter_skin_mode = true
+subsurf_scatter_transmittance_enabled = true
+subsurf_scatter_transmittance_depth = 0.544
+subsurf_scatter_transmittance_boost = 0.14
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d10xe"]
 render_priority = 1
 albedo_color = Color(0.823212, 0.823212, 0.823212, 1)
 albedo_texture = ExtResource("5_yjg44")
 roughness = 0.11
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d10xe"]
-resource_local_to_scene = true
-albedo_texture = ExtResource("5_yjg44")
-uv1_offset = Vector3(0.5, 0.5, 0.5)
-uv1_triplanar = true
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rx8at"]
 resource_local_to_scene = true
-albedo_texture = ExtResource("4_83bls")
-metallic = 0.14
-normal_enabled = true
+albedo_texture = ExtResource("5_yjg44")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rwt4s"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
+metallic = 0.14
+normal_enabled = true
 uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
@@ -87,6 +94,12 @@ uv1_offset = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gmswi"]
+resource_local_to_scene = true
+albedo_texture = ExtResource("4_83bls")
+uv1_offset = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2djm7"]
 resource_local_to_scene = true
 albedo_texture = ExtResource("4_83bls")
 uv1_offset = Vector3(0.5, 0.5, 0.5)
@@ -455,6 +468,26 @@ points = PackedVector3Array(24, 0.75, -38, 24, 0.75, -34, 18, 0.75, -34, 18, 0.7
 [node name="MainTestScene" type="Node3D"]
 script = ExtResource("1_xqpsn")
 
+[node name="_DD3D_WorldWatcher" type="_DD3D_WorldWatcher" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.28616, 1.5, 7.63994)
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+offset_right = 40.0
+grow_vertical = 0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(400, 300)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -4, 2, 13)
+fov = 79.0
+
 [node name="Floor" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 11)
 material_override = SubResource("StandardMaterial3D_dwqnk")
@@ -486,10 +519,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.64308, 1.5, 2.81997)
 size = Vector3(3, 2, 3)
 material = SubResource("StandardMaterial3D_3kxxl")
 
+[node name="ReflectanceMetallicBox2" parent="." instance=ExtResource("3_hrauq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.28616, 1.5, 7.63994)
+material = SubResource("StandardMaterial3D_qmtj1")
+
 [node name="BigBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.51605, 2, 5.11998)
 size = Vector3(3, 2, 0.919922)
-material = SubResource("StandardMaterial3D_qmtj1")
+material = SubResource("StandardMaterial3D_d10xe")
 
 [node name="RefCam" type="Camera3D" parent="BigBox2"]
 process_priority = 1
@@ -502,14 +539,14 @@ visible = false
 [node name="BigBox" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.07083, 1.5, 2.03997)
 size = Vector3(3, 2, 3)
-material = SubResource("StandardMaterial3D_d10xe")
+material = SubResource("StandardMaterial3D_rx8at")
 
 [node name="WorldEnvironment" parent="." instance=ExtResource("6_ivmnp")]
 
 [node name="CrouchBox2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.87094, 2.85492, 10.712)
 size = Vector3(1, 1, 5)
-material = SubResource("StandardMaterial3D_rx8at")
+material = SubResource("StandardMaterial3D_rwt4s")
 block_color = 3
 
 [node name="Crouch_Label" type="Label3D" parent="CrouchBox2"]
@@ -525,25 +562,25 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 13.4907)
 [node name="ProtoCSGBox3D" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 20)
 size = Vector3(4, 2, 5)
-material = SubResource("StandardMaterial3D_rwt4s")
+material = SubResource("StandardMaterial3D_ba25s")
 block_color = 3
 
 [node name="ProtoCSGBox3D3" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.5, 18.5)
 size = Vector3(4, 1, 2)
-material = SubResource("StandardMaterial3D_ba25s")
+material = SubResource("StandardMaterial3D_8mmyr")
 block_color = 3
 
 [node name="ProtoCSGBox3D4" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 21.5)
 size = Vector3(2, 1, 2)
-material = SubResource("StandardMaterial3D_8mmyr")
+material = SubResource("StandardMaterial3D_gmswi")
 block_color = 3
 
 [node name="ProtoCSGBox3D2" parent="." instance=ExtResource("3_hrauq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, 20)
 size = Vector3(4, 4, 5)
-material = SubResource("StandardMaterial3D_gmswi")
+material = SubResource("StandardMaterial3D_2djm7")
 block_color = 3
 
 [node name="FuncGodotMap" type="Node3D" parent="."]
@@ -910,3 +947,6 @@ offset_left = 1353.0
 offset_top = 261.0
 offset_right = 1582.0
 offset_bottom = 488.0
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.3, 2, 13)

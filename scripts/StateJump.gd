@@ -13,7 +13,7 @@ func _ready():
 
 func enter():
 	super.enter() # Call parent enter to ensure physics_values is initialized
-	ANIMATION.play("jump", -1.0, 1.0)
+	#ANIMATION.play("jump", -1.0, 1.0)
 	# Apply upward impulse
 	PLAYER.movement_values[PLAYER.MovementValues.JUMP_VELOCITY] = JUMP_VELOCITY
 	PLAYER.movement_values[PLAYER.MovementValues.JUMP_MUL] = JUMP_MUL

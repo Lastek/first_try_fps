@@ -1,10 +1,11 @@
-[gd_scene load_steps=17 format=3 uid="uid://cc1m2a1obsyn4"]
+[gd_scene load_steps=18 format=3 uid="uid://cc1m2a1obsyn4"]
 
 [ext_resource type="Script" uid="uid://ts0xb0nrbb2h" path="res://scripts/char.gd" id="1_627hw"]
 [ext_resource type="CapsuleMesh" uid="uid://cqnpb8mm0s3dx" path="res://meshes/player_capsule_mesh.tres" id="2_51nh8"]
 [ext_resource type="Shape3D" uid="uid://gbrwu1cyrge0" path="res://meshes/player_capsule_mesh_collision.tres" id="3_efww3"]
 [ext_resource type="Script" uid="uid://c0mm7qkgb7cjm" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
 [ext_resource type="Script" uid="uid://ct1gqcrch3uc7" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
+[ext_resource type="Script" uid="uid://cf5052n8rumjj" path="res://scripts/camera.gd" id="4_gv6je"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_k4wwl"]
 
@@ -234,16 +235,13 @@ skeleton = NodePath("")
 
 [node name="Head" type="Node3D" parent="VisualPlayer"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+rotation_edit_mode = 1
 
 [node name="Camera" type="Camera3D" parent="VisualPlayer/Head"]
+rotation_edit_mode = 1
 current = true
 fov = 85.0
-
-[node name="ReflectionProbe" type="ReflectionProbe" parent="VisualPlayer/Head/Camera"]
-update_mode = 1
-max_distance = 15.4
-size = Vector3(40, 40, 40)
-box_projection = true
+script = ExtResource("4_gv6je")
 
 [node name="Weapon" type="Node3D" parent="VisualPlayer/Head"]
 

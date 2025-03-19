@@ -8,7 +8,7 @@ void fragment() {
 	// Called for every pixel the material is visible on.
 	    // Compute a repeating pattern based on the UV.x coordinate.
     float stripe = step(0.5, fract(UV.x / stripe_width));
-    
+
     // Set the color based on the stripe pattern.
     ALBEDO = vec3(stripe);
 }

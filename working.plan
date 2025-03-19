@@ -1,5 +1,12 @@
-3/17/2025
+3/18/2025
+- Added DebugDraw3D plugin. Working on adding some visual debug stuff.
+Things are working well and it's all about getting a handle on how transformd
+work. Really glad I have a kindle book on 3D math "3D Math Primer for Graphics and Game Development (Wordware Game Math Library)."
+One of those things I bought literal ages ago and doesn't get bogged down in highly technical jargon.
+It's funny how a book like this is ancient but contains fundamentals which haven't changed.
 
+- Got movement interpolation working and refactored some of the mouse input code. Think the biggest obstacle is performing input updates with interpolaiton. Partial physics updates might be a good solution, but that's solvable by just running the player physics at 125hz or 250hz. I guess I'll find out how well that holds up once more logic is added. If I separate different types of updates into different update frequencies then it should be ok as long as the cpu is can finish a full update on time (ie all the physics updates trigger at the same time). Might be a good idea to interleave these updates and then do interpolation as necessary. 
+Biggest concern is different states not syncing so it might be a good idea to have a layered signal queue. But, this will be addressed once or if it's necessary.
 
 
 3/15/2025

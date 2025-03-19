@@ -5,10 +5,9 @@
             "name": "GDScript Godot",
             "type": "godot",
             "request": "launch",
-            "project": "${workspaceFolder}",
             "port": 6007,
-            "debugServer": 6006,
-            "additional_options": "--always-on-top",
+            // "debugServer": 6006,
+            // "additional_options": "--always-on-top",
         }
     ]
 }

@@ -23,12 +23,15 @@ Global="*res://scripts/global.gd"
 [display]
 
 window/size/viewport_width=1600
-window/size/viewport_height=900
-window/size/initial_position=Vector2i(0, 200)
-window/size/initial_screen=1
+window/size/viewport_height=1200
+window/size/mode=3
+window/size/initial_position_type=0
+window/size/initial_position=Vector2i(320, 635)
+window/size/borderless=true
+window/size/always_on_top=true
 window/energy_saving/keep_screen_on=false
 window/subwindows/embed_subwindows=false
-window/stretch/mode="viewport"
+display_server/driver.windows="windows"
 window/vsync/vsync_mode=0
 
 [dotnet]
@@ -111,7 +114,7 @@ vk_bracket_left={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=250
+common/physics_ticks_per_second=32
 common/physics_jitter_fix=0.0
 3d/default_gravity=10.0
 
