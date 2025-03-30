@@ -13,9 +13,9 @@ func enter():
 	super.enter() # Call parent enter to ensure physics_values is initialized
 	#ANIMATION.play("walk", -1.0, 1.0)
 	# Set walk-specific physics values
-	PLAYER.movement_values[PLAYER.MovementValues.SPEED] = SPEED
-	PLAYER.movement_values[PLAYER.MovementValues.ACCELERATION] = ACCELLERATION
-	PLAYER.movement_values[PLAYER.MovementValues.DECELERATION] = DECELERATION 
+	PLAYER.mv[PLAYER.MV.SPEED] = SPEED
+	PLAYER.mv[PLAYER.MV.ACCELERATION] = ACCELLERATION
+	PLAYER.mv[PLAYER.MV.DECELERATION] = DECELERATION 
 	pass
 	
 # func enter(previous_state_path: String, data := {}) -> void:
@@ -27,7 +27,7 @@ func update(_delta):
 		transition.emit("PlayerStateIdle")
 
 func set_animation_speed(speed):
-	var alpha = remap(speed, 0.0, PLAYER.movement_values[PLAYER.MovementValues.SPEED], 0.0, 1.0)
+	var alpha = remap(speed, 0.0, PLAYER.mv[PLAYER.MV.SPEED], 0.0, 1.0)
 	ANIMATION.speed_scale = lerp(0.0, TOP_ANIM_SPEED, alpha)
 
 func update_input(event):

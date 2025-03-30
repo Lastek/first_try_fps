@@ -21,4 +21,4 @@ func init_player_reference(player_ref: Player):
 	self.PLAYER = player_ref
 
 func player_get_vector_length():
-	return PLAYER.physics_state[PLAYER.PHYS_STATE.VELOCITY].length()
+	return PLAYER.ps[PLAYER.PS.VELOCITY].length()

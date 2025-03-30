@@ -15,10 +15,10 @@ func enter():
 	super.enter() # Call parent enter to ensure physics_values is initialized
 	#ANIMATION.play("jump", -1.0, 1.0)
 	# Apply upward impulse
-	PLAYER.movement_values[PLAYER.MovementValues.JUMP_VELOCITY] = JUMP_VELOCITY
-	PLAYER.movement_values[PLAYER.MovementValues.JUMP_MUL] = JUMP_MUL
-	PLAYER.movement_values[PLAYER.MovementValues.AIR_DECELERATION] = DECEL_AIR
-	PLAYER.movement_values[PLAYER.MovementValues.AIR_ACCELERATION] = ACCEL_AIR 
+	PLAYER.mv[PLAYER.MV.JUMP_VELOCITY] = JUMP_VELOCITY
+	PLAYER.mv[PLAYER.MV.JUMP_MUL] = JUMP_MUL
+	PLAYER.mv[PLAYER.MV.AIR_DECELERATION] = DECEL_AIR
+	PLAYER.mv[PLAYER.MV.AIR_ACCELERATION] = ACCEL_AIR 
 	PLAYER.jump_impulse()
 
 

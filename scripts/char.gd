@@ -4,6 +4,7 @@
 # Thanks to StayAtHomeDev for his YouTube tutorials
 class_name Player extends CharacterBody3D 
 
+## Player Node References
 var PL_HEAD: Node3D
 var PL_CAMERA: Camera3D
 var PL_MESH: MeshInstance3D
@@ -18,7 +19,7 @@ var AN_JUMP_EFFECT_AMOUNT: float = 1.0
 var AN_HEADBOB_EFFECT_AMOUNT: float = 1.0
 var AN_ENABLED: bool = true
 
-
+## Player Movement Constants
 const MOUSE_SENSITIVITY = 0.1
 
 const WALK_SPEED = 6.0
@@ -32,7 +33,8 @@ const JUMP_VELOCITY = 3.5
 const JUMP_MUL = 1.8
 const GROUND_FRICTION = 0.8
 
-enum MovementValues {
+## Player Movement Indexing enum
+enum MV {
 	SPEED,
 	ACCELERATION,
 	DECELERATION,
@@ -45,13 +47,19 @@ enum MovementValues {
 	SIZE
 }
 
-var movement_values:Array
+## Player Movement Array
+var mv:Array
 
+## Player Input Vectors 
+
+# Stores mouse input for rotating the camera in the physics process
+var mouseInput: Vector2 = Vector2(0, 0)
 var input_dir: Vector2
 var input_dir_prev: Vector2
 var direction: Vector3
 var rotVel: Vector2
 
+## Misc
 # var low_ceiling: bool = false
 # var was_on_floor: bool = false
 var dir_lerp: Vector2 = Vector2(0.0, 0.0)
@@ -60,8 +68,7 @@ var head_rot:Vector2 = Vector2()
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var GRAVITY = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-# Stores mouse input for rotating the camera in the physics process
-var mouseInput: Vector2 = Vector2(0, 0)
+## Player Input Actions Indexing Enum
 # this is problematic because this is not restricted to ACTIONS
 enum {
 	JUMP = 0,
@@ -76,6 +83,7 @@ enum {
 	RENDER_FPS_INCREMENT,
 }
 
+## Player Input Actions
 var ACTIONS: Dictionary = {
 	JUMP: "vk_jump",
 	LEFT: "vk_left",
@@ -90,19 +98,21 @@ var ACTIONS: Dictionary = {
 }
 
 ## FSM
+var FSM: StateMachine
 var PlayerStateIdle: State
 var PlayerStateWalk: State
 var PlayerStateSprint: State
 var PlayerStateJump: State
-var FSM: StateMachine
 
+## Utility stuff
 var frames = 0
 var frames_dt_accumulator = 0.0
 var dt = 1.0/Engine.physics_ticks_per_second
 var physics_time = 0.0
 var current_time = 0.0
 
-enum PHYS_STATE {
+
+enum PS {
 	POSITION,
 	VELOCITY,
 	ROTATION,
@@ -111,14 +121,16 @@ enum PHYS_STATE {
 }
 
 # Fixed-size arrays for physics states
-var physics_state: Array = []
-var previous_physics_state: Array = []
+var ps: Array = []
+var prev_ps: Array = []
+
+## Monitoring and Graphing related variables
+@onready var jittermon
 var tracker = 0
 var spin: int = 0
 var global_alpha: float
 var max_alpha: float = 0
 var accumulator = 0.0
-@onready var jittermon
 
 func init_jittermon():
 	jittermon = get_tree().get_root().get_node("MainTestScene/CanvasLayer/JitterMon")
@@ -132,24 +144,18 @@ func init_jittermon():
 
 
 func _ready():
-	# Initialize arrays with correct size
 	call_deferred("init_jittermon")
 
-	physics_state.resize(PHYS_STATE.SIZE)
-	previous_physics_state.resize(PHYS_STATE.SIZE)
-	ready_cont()
+	ready_node_references()
+	ready_state_machine()
+	ready_physics_state()
+	ready_animation()
+	ready_player_movement()
 
-	# Initialize default values
-	current_time = Time.get_ticks_usec() / 1000000.0
-	physics_time = Time.get_ticks_usec() / 1000000.0 +0.01
-	physics_state[PHYS_STATE.POSITION] = position
-	physics_state[PHYS_STATE.VELOCITY] = velocity
-	physics_state[PHYS_STATE.ROTATION] = PL_HEAD.rotation
-	physics_state[PHYS_STATE.TIME] = physics_time
-	previous_physics_state = physics_state.duplicate()
+	controls_mapping_check()
 
 
-func ready_cont():
+func ready_node_references():
 	print("Player _ready():")
 	Global.player = self # provides reference to player
 	print("Init FSM")
@@ -166,18 +172,27 @@ func ready_cont():
 	PL_CROUCH_CEILING_DETECTION.add_exception($".")
 	print("PL_VISUAL: ", PL_VISUAL)
 	print("set up inputs")
-	controls_mapping_check()
-	init_state_machine()
-	init_anim()
-	init_player_movement()
 	#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED # This has been relocated to the main scene script
 	print("End Player _ready()")
 
+func ready_physics_state():
+	# Initialize arrays with correct size
+	ps.resize(PS.SIZE)
+	prev_ps.resize(PS.SIZE)
 
-func init_state_machine():
+	# Initialize default values
+	current_time = Time.get_ticks_usec() / 1000000.0
+	physics_time = Time.get_ticks_usec() / 1000000.0 +0.01
+	ps[PS.POSITION] = position
+	ps[PS.VELOCITY] = velocity
+	ps[PS.ROTATION] = PL_HEAD.rotation
+	ps[PS.TIME] = physics_time
+	prev_ps = ps.duplicate()
+
+func ready_state_machine():
 	print("Instantiating FSM")
 	FSM = StateMachine.new(self)
-	
+
 	PlayerStateIdle = StateIdle.new()
 	PlayerStateWalk = StateWalk.new()
 	PlayerStateSprint = StateSprint.new()
@@ -199,49 +214,55 @@ func init_state_machine():
 
 
 ## Some housekeeping to make sure anims start correctly
-func init_anim():
+func ready_animation():
 	AN_HEADBOB_EFFECT.play("RESET")
 
-func init_player_movement():
-	movement_values.resize(MovementValues.SIZE)
-	movement_values[MovementValues.SPEED] = WALK_SPEED
-	movement_values[MovementValues.ACCELERATION] = ACCELERATION
-	movement_values[MovementValues.DECELERATION] = DECELERATION
-	movement_values[MovementValues.GROUND_FRICTION] = GROUND_FRICTION
-	movement_values[MovementValues.AIR_ACCELERATION] = AIR_ACCELERATION 
-	movement_values[MovementValues.AIR_DECELERATION] = AIR_DECELERATION 
-	movement_values[MovementValues.JUMP_VELOCITY] = JUMP_VELOCITY
-	movement_values[MovementValues.JUMP_MUL] = JUMP_MUL
-	movement_values[MovementValues.CROUCH_SPEED] = CROUCH_SPEED
+func ready_player_movement():
+	mv.resize(MV.SIZE)
+	mv[MV.SPEED] = WALK_SPEED
+	mv[MV.ACCELERATION] = ACCELERATION
+	mv[MV.DECELERATION] = DECELERATION
+	mv[MV.GROUND_FRICTION] = GROUND_FRICTION
+	mv[MV.AIR_ACCELERATION] = AIR_ACCELERATION 
+	mv[MV.AIR_DECELERATION] = AIR_DECELERATION 
+	mv[MV.JUMP_VELOCITY] = JUMP_VELOCITY
+	mv[MV.JUMP_MUL] = JUMP_MUL
+	mv[MV.CROUCH_SPEED] = CROUCH_SPEED
 
 func _physics_process(delta: float) -> void:
-	previous_physics_state = physics_state.duplicate()
+	prev_ps = ps.duplicate()
 	# Handle input and physics
 	input_to_vec(delta)
 	integrate_physics(delta)
 	physics_save_state(delta)
-	
+	var y_off = 1.32
+	var place = (Vector3(0,y_off,0) )
+	var vel = velocity.normalized()
+	vel = Vector3(vel.x, 0, vel.z)
+	DebugDraw3D.draw_arrow(ps[PS.POSITION].origin+(place),
+					(place+(vel))+ps[PS.POSITION].origin,
+					Color.GREEN, .06, true)
 	Global.debug.add_property("Phys", dt, 0)
 	Global.debug.add_property("Physics Position", global_position, 1)
 	Global.debug.add_property("Physics Velocity", velocity, 2)
-
+	
 ## Call after integrate_physics
 func physics_save_state(_delta:float) -> void:
 	physics_time = Time.get_ticks_usec() / 1_000_000.0
-	physics_state[PHYS_STATE.POSITION] = global_transform  # Use global_position for consistency
-	physics_state[PHYS_STATE.VELOCITY] = velocity			# Player velocity after applying changes
-	physics_state[PHYS_STATE.ROTATION] = head_rot  # Head rotation from mouse input
-	physics_state[PHYS_STATE.TIME] = physics_time
+	ps[PS.POSITION] = global_transform  # Use global_position for consistency
+	ps[PS.VELOCITY] = velocity			# Player velocity after applying changes
+	ps[PS.ROTATION] = head_rot  # Head rotation from mouse input
+	ps[PS.TIME] = physics_time
 	
 
 func integrate_physics(delta:float) -> void:
 	# Get physics values from current state
-	var speed = movement_values[MovementValues.SPEED]
-	var accel = movement_values[MovementValues.ACCELERATION]
-	var decel = movement_values[MovementValues.DECELERATION]
-	var frict = movement_values[MovementValues.GROUND_FRICTION]
-	var air_accel = movement_values[MovementValues.AIR_ACCELERATION]
-	var air_decel = movement_values[MovementValues.AIR_DECELERATION]
+	var speed = mv[MV.SPEED]
+	var accel = mv[MV.ACCELERATION]
+	var decel = mv[MV.DECELERATION]
+	var frict = mv[MV.GROUND_FRICTION]
+	var air_accel = mv[MV.AIR_ACCELERATION]
+	var air_decel = mv[MV.AIR_DECELERATION]
 	
 	if !is_on_floor():
 		velocity.y -= GRAVITY * delta * JUMP_MUL
@@ -267,8 +288,8 @@ func integrate_physics(delta:float) -> void:
 	Global.debug.add_property("speed", speed, -1)
 	
 func jump_impulse():
-	velocity.y += movement_values[MovementValues.JUMP_VELOCITY] \
-					* movement_values[MovementValues.JUMP_MUL]
+	velocity.y += mv[MV.JUMP_VELOCITY] \
+					* mv[MV.JUMP_MUL]
 
 func _process(delta: float) -> void:
 	frames += 1
@@ -278,17 +299,17 @@ func _process(delta: float) -> void:
 	var alpha = Engine.get_physics_interpolation_fraction()
 	alpha = clampf(alpha, 0.0, 1.0)
 	global_alpha = alpha
-	var prev_ps = previous_physics_state[PHYS_STATE.POSITION]
-	var cur_ps = physics_state[PHYS_STATE.POSITION]
+	#var prev_ps = prev_ps[PS.POSITION]
+	var cur_ps = ps[PS.POSITION]
 	# Interpolate position
-	#var interpolated_pos:Transform3D = previous_physics_state[PHYS_STATE.POSITION] * alpha \
-							#+ physics_state[PHYS_STATE.POSITION] \
+	#var interpolated_pos:Transform3D = prev_ps[PS.POSITION] * alpha \
+							#+ ps[PS.POSITION] \
 							#*(1.0 - alpha)	
-	var lerp_pos:Transform3D = prev_ps.interpolate_with(cur_ps, alpha)
-		#var interpolated_pos:Vector3 = lerp(previous_physics_state[PHYS_STATE.POSITION], physics_state[PHYS_STATE.POSITION], alpha)
+	var lerp_pos:Transform3D = prev_ps[PS.POSITION].interpolate_with(cur_ps, alpha)
+		#var interpolated_pos:Vector3 = lerp(prev_ps[PS.POSITION], ps[PS.POSITION], alpha)
 	# Interpolate head rotation
-	var prev_rot = previous_physics_state[PHYS_STATE.ROTATION]
-	var curr_rot = physics_state[PHYS_STATE.ROTATION]
+	var prev_rot = prev_ps[PS.ROTATION]
+	var curr_rot = ps[PS.ROTATION]
 	#PL_VISUAL.prev_rot.slerp(curr_rot, alpha)
 	head_rotation()
 	rotVel = head_rot

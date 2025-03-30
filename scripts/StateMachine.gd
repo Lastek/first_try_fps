@@ -6,7 +6,7 @@ var PLAYER: Player
 
 ## States must be created before they are able to be read in
 ## Make sure states are instanced before the state machine.
-
+## Take in a reference to the player for propagation to states.
 func _init(ref_player: Player):
 	if ref_player != null:
 		PLAYER = ref_player
@@ -21,7 +21,8 @@ func _ready() -> void:
 		if child is State:
 			available_states[child.name] = child
 			child.transition.connect(on_transition)
-			child.init_player_reference(PLAYER)
+			# Pass reference down. Don't know any better way to do this.
+			child.init_player_reference(PLAYER) 
 		else:
 			push_warning("Wrong node type in state machine {%s}" % available_states)
 			

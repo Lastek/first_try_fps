@@ -28,11 +28,11 @@ window/size/mode=3
 window/size/initial_position_type=0
 window/size/initial_position=Vector2i(320, 635)
 window/size/borderless=true
-window/size/always_on_top=true
 window/energy_saving/keep_screen_on=false
 window/subwindows/embed_subwindows=false
 display_server/driver.windows="windows"
 window/vsync/vsync_mode=0
+window/size/always_on_top.editor=true
 
 [dotnet]
 
@@ -114,9 +114,10 @@ vk_bracket_left={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=32
+common/physics_ticks_per_second=125
 common/physics_jitter_fix=0.0
 3d/default_gravity=10.0
+3d/solver/solver_iterations=8
 
 [rendering]
 
